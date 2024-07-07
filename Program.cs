@@ -1,5 +1,6 @@
 using Neocore.Components;
 using Neo4j.Driver;
+using Neocore.Repositories;
 
 namespace Neocore;
 
@@ -12,6 +13,16 @@ public class Program
         // Add services to the container.
         builder.Services.AddRazorComponents()
             .AddInteractiveServerComponents();
+
+        builder.Services.AddSingleton(
+            GraphDatabase.Driver("neo4j://localhost:7687", AuthTokens.Basic("neo4j", "neo4j"))
+        );
+
+        //builder.Services.AddScoped<IProductRepository, ProductRepository>();
+        builder.Services
+            .AddScoped<ProductRepository>()
+            .AddScoped<VendorRepository>()
+        ;
 
         var app = builder.Build();
 

@@ -1,0 +1,61 @@
+﻿@page "/query"
+
+@inject ProductRepository ProductRepository
+@inject VendorRepository VendorRepository
+
+<h3 class="mt-2">Vendors:</h3>
+@foreach (var vendor in Vendors)
+{
+        <li>@vendor.Name (@vendor.ContactInfo)</li>
+}
+
+<h3 class="mt-2">Component Vendors:</h3>
+
+@foreach (var vendor in ComponentVendors)
+{
+        <li>@vendor.Name</li>
+}
+
+<h3 class="mt-2">Products:</h3>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Manufacturer</th>
+            <th>Specifications</th>
+            <th>Price</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var product in Products)
+        {
+            <tr>
+                <td>@product.Name</td>
+                <td>@product.Type</td>
+                <td>@product.Manufacturer</td>
+                <td>@product.Specifications</td>
+                <td>@product.Price</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@code {
+    public Product? Product { get; set; }
+    public List<Product> Products { get; set; } = new();
+    public List<Vendor> Vendors { get; set; } = new();
+    public List<Vendor> ComponentVendors { get; set; } = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Product = await ProductRepository.FindById(1);
+        Products = [.. await ProductRepository.FindAll()];
+        Vendors = [.. await VendorRepository.FindAll()];
+
+        ComponentVendors = [.. await VendorRepository.FindVendorsByProductType("Component")];
+
+        await base.OnInitializedAsync();
+    }
+}
