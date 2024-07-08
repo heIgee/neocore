@@ -1,0 +1,36 @@
+﻿@page "/items"
+
+@inject ItemRepository ItemRepository
+
+<h3>Items</h3>
+
+<TableComponent Items="ItemList">
+    <Head>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Manufacturer</th>
+            <th>Specifications</th>
+            <th>Price</th>
+        </tr>
+    </Head>
+    <Row Context="product">
+        <tr>
+            <td>@product.Name</td>
+            <td>@product.Type</td>
+            <td>@product.Manufacturer</td>
+            <td>@product.Specifications</td>
+            <td>@product.Price</td>
+        </tr>
+    </Row>
+</TableComponent>
+
+@code {
+    public List<Item> ItemList { get; set; } = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        ItemList = [.. await ItemRepository.FindAll()];
+        await base.OnInitializedAsync();
+    }
+}

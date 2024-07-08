@@ -1,5 +1,6 @@
 ﻿using Neo4j.Driver;
 using Neocore.Models;
+using Neocore.ViewModels;
 
 namespace Neocore.Repositories;
 
@@ -24,37 +25,49 @@ public class VendorRepository(IDriver driver)
         var result = await session.ExecuteReadAsync(async tx =>
         {
             var cursor = await tx.RunAsync("MATCH (v:Vendor) RETURN v");
-            return await cursor.ToListAsync(record => MapToVendor(record["v"].As<INode>()));
+            return await cursor.ToListAsync(record => Vendor.FromNode(record["v"].As<INode>()));
         });
         return result;
     }
 
-    public async Task<IEnumerable<Vendor>> FindVendorsByProductType(string productType)
+    public async Task<IEnumerable<VendorSummary>> FindAllWithSummary()
     {
         await using var session = _driver.AsyncSession();
         var result = await session.ExecuteReadAsync(async tx =>
         {
             var cursor = await tx.RunAsync(@"
-                MATCH (v:Vendor)-[:SUPPLIES]->(p:Product {type: $productType}) 
+                MATCH (v:Vendor)<-[:SIGNED_WITH]-(c:Contract)<-[su:SUPPLIED_UNDER]-(i:Item) 
+                RETURN v, COUNT(DISTINCT c) AS cdc, COUNT(DISTINCT i) AS cdi
+            ");
+            return await cursor.ToListAsync(record => VendorSummary.FromRecord(record));
+        });
+        return result;
+    }
+
+    public async Task<IEnumerable<Vendor>> FindVendorsByItemType(string productType)
+    {
+        await using var session = _driver.AsyncSession();
+        var result = await session.ExecuteReadAsync(async tx =>
+        {
+            var cursor = await tx.RunAsync(@"
+                MATCH (v:Vendor)<-[:SIGNED_WITH]-(Contract)<-[:SUPPLIED_UNDER]-(p:Item {type: $productType}) 
                 RETURN DISTINCT v
             ", new { productType });
-            return await cursor.ToListAsync(record => MapToVendor(record["v"].As<INode>()));
+            return await cursor.ToListAsync(record => Vendor.FromNode(record["v"].As<INode>()));
         });
         return result;
 
-
-        #if false
+#if false
         const string query = @"
-            MATCH (v:Vendor)-[:SUPPLIES]->(p:Product {type: $productType})
+            MATCH (v:Vendor)-[:SUPPLIES]->(p:Item {type: $productType})
             RETURN DISTINCT v";
 
         return await ExecuteReadListAsync(
             query,
             new { productType },
             record => MapToVendor(record["v"].As<INode>()));
-        #endif
+#endif
     }
-
 
     private static Vendor MapToVendor(INode node) => new()
     {

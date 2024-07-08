@@ -1,0 +1,41 @@
+﻿@page "/vendors"
+
+@inject VendorRepository VendorRepository
+
+<h3>Vendors SUMMARY</h3>
+
+<TableComponent Items="VendorSummaries">
+    <Head>
+        <tr>
+            <th>Name</th>
+            <th>ContactInfo</th>
+            <th>TotalContracts</th>
+            <th>TotalItems</th>
+        </tr>
+    </Head>
+    <Row Context="sum">
+        <tr>
+            <td>@sum.Vendor.Name</td>
+            <td>@sum.Vendor.ContactInfo</td>
+            <td><a href="/contracts?vendor=@sum.Vendor.Id">@sum.TotalContracts</a></td>
+            <td><a href="/items?vendor=@sum.Vendor.Id">@sum.TotalItems</a></td>
+            <td></td>
+        </tr>
+    </Row>
+</TableComponent>
+
+@code {
+    public List<VendorSummary> VendorSummaries { get; set; } = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        Console.WriteLine("ULTRA HEAVY REQUEST " + Guid.NewGuid());
+        
+        // Vendors = [.. await VendorRepository.FindAll()];
+        // ComponentVendors = [.. await VendorRepository.FindVendorsByItemType("Component")];
+
+        VendorSummaries = [..await VendorRepository.FindAllWithSummary()];
+
+        await base.OnInitializedAsync();
+    }
+}

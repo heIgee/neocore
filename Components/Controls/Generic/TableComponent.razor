@@ -1,0 +1,36 @@
+﻿@typeparam TItem
+
+@if (Items is not null && Items.Count > 0 && Row is not null)
+{
+    <table class="table">
+        <thead>
+            @Head
+        </thead>
+        <tbody>
+            <Virtualize Items="Items" Context="item">
+                @Row(item)
+            </Virtualize>
+        </tbody>
+        <tfoot>
+            @Footer
+        </tfoot>
+    </table class="table">
+}
+else
+{
+    <span class="text-muted">There is nothing here...</span>
+}
+
+@code {
+    [Parameter]
+    public List<TItem>? Items { get; set; }
+
+    [Parameter]
+    public RenderFragment<TItem>? Row { get; set; }
+
+    [Parameter]
+    public RenderFragment? Head { get; set; }
+
+    [Parameter]
+    public RenderFragment? Footer { get; set; }
+}

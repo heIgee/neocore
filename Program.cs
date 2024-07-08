@@ -20,7 +20,7 @@ public class Program
 
         //builder.Services.AddScoped<IProductRepository, ProductRepository>();
         builder.Services
-            .AddScoped<ProductRepository>()
+            .AddScoped<ItemRepository>()
             .AddScoped<VendorRepository>()
         ;
 
