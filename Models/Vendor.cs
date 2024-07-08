@@ -8,6 +8,8 @@ public class Vendor : INeocoreNode<Vendor>
     public string? Name { get; set; }
     public string? ContactInfo { get; set; }
 
+    //public static Vendor FromRecord(IEntity entity) => FromNode(entity.As<INode>());
+
     public static Vendor FromNode(IEntity node) => new()
     {
         Id = node.Properties["id"].As<int>(),

@@ -34,7 +34,7 @@
         // Vendors = [.. await VendorRepository.FindAll()];
         // ComponentVendors = [.. await VendorRepository.FindVendorsByItemType("Component")];
 
-        VendorSummaries = [..await VendorRepository.FindAllWithSummary()];
+        VendorSummaries = [.. await VendorRepository.FindAllWithSummary()];
 
         await base.OnInitializedAsync();
     }
