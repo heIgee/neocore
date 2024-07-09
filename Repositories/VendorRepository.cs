@@ -39,7 +39,7 @@ public class VendorRepository(IDriver driver) : NeocoreRepository(driver), IVend
         );
     }
 
-    public async Task<IEnumerable<Vendor>> FindVendorsByItemType(string productType)
+    public async Task<IEnumerable<Vendor>> FindByItemType(string productType)
     {
         const string query = @"
             MATCH (v:Vendor)<-[:SIGNED_WITH]-(Contract)<-[:SUPPLIED_UNDER]-(p:Item {type: $productType}) 

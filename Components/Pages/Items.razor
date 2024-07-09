@@ -1,8 +1,23 @@
 ﻿@page "/items"
 
-@inject ItemRepository ItemRepository
+@inherits NeocoreComponent
 
-<h3>Items</h3>
+@inject ItemRepository ItemRepository
+@inject VendorRepository VendorRepository
+@inject NavigationManager NavigationManager
+
+<h4>VENDOR ID: @VendorId</h4>
+
+<FilterComponent 
+    TEntity="Vendor" 
+    SelectedId="VendorId"
+    Entities="Vendors"
+    EntityId="@(v => v.Id)"
+    EntityName="@(v => v.Name)"
+    OnEntityFilter="UpdateQueryVendor"
+/>
+
+<h3 class="mt-2">Items</h3>
 
 <TableComponent Items="ItemList">
     <Head>
@@ -28,9 +43,67 @@
 @code {
     public List<Item> ItemList { get; set; } = new();
 
-    protected override async Task OnInitializedAsync()
+    public List<Vendor> Vendors { get; set; } = new();
+
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "vendor")]
+    public int VendorId { get; set; }
+
+    public Items()
     {
-        ItemList = [.. await ItemRepository.FindAll()];
-        await base.OnInitializedAsync();
+        EnableLifecycleLogging = true;
     }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+        if (!IsPrerendering) 
+        {
+            Console.WriteLine("BEFORE VENDORS SET");
+            if (Vendors.Count <= 0)
+                Vendors = [.. await VendorRepository.FindAll()];
+            Console.WriteLine("AFTER VENDORS SET");
+            await UpdateItemList();
+        }
+    }
+
+    private async Task UpdateItemList()
+    {
+        Console.ForegroundColor = ConsoleColor.Red;
+        Console.WriteLine("EXPENSIVE DATABASE REQUEST");
+        Console.ResetColor();
+        if (VendorId <= 0)
+        {
+            ItemList = [.. await ItemRepository.FindAll()];
+        }
+        else
+        {
+            ItemList = [.. await ItemRepository.FindByVendor(VendorId)];
+        }
+    }
+
+    public void UpdateQueryVendor(int vendorId)
+    {
+        Console.WriteLine($"FILTER BY VENDOR: {VendorId} -> {vendorId}");
+
+        if (VendorId != vendorId)
+        {
+            // UpdateItemList() will be called, filtering accordingly
+            NavigationManager.NavigateTo(
+                NavigationManager.GetUriWithQueryParameter("vendor", vendorId)
+            );
+        }
+    }
+
+    // protected override async Task OnAfterRenderAsync(bool firstRender)
+    // {
+    //     if (firstRender)
+    //     {
+    //         Console.WriteLine("BEFORE VENDORS SET");
+    //         Vendors = [.. await VendorRepository.FindAll()];
+    //         Console.WriteLine("AFTER VENDORS SET");
+    //     }
+
+    //     await base.OnAfterRenderAsync(firstRender);
+    // }
 }

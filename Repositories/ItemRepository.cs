@@ -24,4 +24,17 @@ public class ItemRepository(IDriver driver) : NeocoreRepository(driver), IItemRe
             record => Item.FromNode(record["i"].As<INode>())
         );
     }
+
+    public async Task<IEnumerable<Item>> FindByVendor(int vendorId)
+    {
+        const string query = @"
+            MATCH (v:Vendor {id: $vendorId})<-[:SIGNED_WITH]-(c:Contract)<-[su:SUPPLIED_UNDER]-(i:Item) 
+            RETURN DISTINCT i
+        ";
+        return await ExecuteReadListAsync(
+            query,
+            new { vendorId },
+            record => Item.FromNode(record["i"].As<INode>())
+        );
+    }
 }

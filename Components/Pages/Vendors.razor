@@ -1,5 +1,7 @@
 ﻿@page "/vendors"
 
+@inherits NeocoreComponent
+
 @inject VendorRepository VendorRepository
 
 <h3>Vendors SUMMARY</h3>
@@ -29,12 +31,14 @@
 
     protected override async Task OnInitializedAsync()
     {
-        Console.WriteLine("ULTRA HEAVY REQUEST " + Guid.NewGuid());
+        if (!IsPrerendering)
+        {
+            // Console.WriteLine("ULTRA HEAVY REQUEST " + Guid.NewGuid());
+            VendorSummaries = [.. await VendorRepository.FindAllWithSummary()];
+        }
         
         // Vendors = [.. await VendorRepository.FindAll()];
-        // ComponentVendors = [.. await VendorRepository.FindVendorsByItemType("Component")];
-
-        VendorSummaries = [.. await VendorRepository.FindAllWithSummary()];
+        // ComponentVendors = [.. await VendorRepository.FindByItemType("Component")];
 
         await base.OnInitializedAsync();
     }

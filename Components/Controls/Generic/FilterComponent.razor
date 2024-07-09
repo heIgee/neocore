@@ -1,0 +1,28 @@
+﻿@typeparam TEntity
+@inherits NeocoreComponent
+
+<select class="form-select w-50" @bind="@SelectedId" @bind:after="InvokeFilter" >
+    <option value="0">All</option>
+    @foreach (var entity in Entities)
+    {
+        <option @key="EntityId?.Invoke(entity)" value="@EntityId?.Invoke(entity)">@EntityName?.Invoke(entity)</option>
+    }
+</select>
+
+@code {
+    [Parameter] public int SelectedId { get; set; }
+    [Parameter] public List<TEntity> Entities { get; set; } = new();
+    [Parameter] public Func<TEntity, int>? EntityId { get; set; }
+    [Parameter] public Func<TEntity, string>? EntityName { get; set; }
+    [Parameter] public EventCallback<int> OnEntityFilter { get; set; }
+
+    public FilterComponent()
+    {
+        EnableLifecycleLogging = true;
+    }
+
+    private async Task InvokeFilter()
+    {
+        await OnEntityFilter.InvokeAsync(SelectedId);
+    }
+}
