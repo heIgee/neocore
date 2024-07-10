@@ -5,5 +5,6 @@ namespace Neocore.Models;
 public interface INeocoreNode<T>
 {
     int Id { get; set; }
-    static abstract T FromNode(IEntity node);
+    static abstract T FromRecord(IRecord record);
+    static abstract T FromNode(INode node);
 }

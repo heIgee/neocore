@@ -1,4 +1,5 @@
 ﻿using Neo4j.Driver;
+using Neocore.Common;
 
 namespace Neocore.Models;
 
@@ -11,7 +12,9 @@ public class Item : INeocoreNode<Item>
     public string? Specifications { get; set; }
     public float Price { get; set; }
 
-    public static Item FromNode(IEntity node) => new()
+    public static Item FromRecord(IRecord record) => FromNode(record[Aliases.Item].As<INode>());
+
+    public static Item FromNode(INode node) => new()
     {
         Id = node.Properties["id"].As<int>(),
         Name = node.Properties["name"].As<string>(),

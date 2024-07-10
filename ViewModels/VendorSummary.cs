@@ -1,4 +1,5 @@
 ﻿using Neo4j.Driver;
+using Neocore.Common;
 using Neocore.Models;
 
 namespace Neocore.ViewModels;
@@ -11,8 +12,8 @@ public class VendorSummary : INeocoreViewModel<VendorSummary>
 
     public static VendorSummary FromRecord(IRecord record) => new()
     {
-        Vendor = Vendor.FromNode(record["v"].As<INode>()),
-        TotalContracts = record["cdc"].As<int>(),
-        TotalItems = record["cdi"].As<int>()
+        Vendor = Vendor.FromNode(record[Aliases.Vendor].As<INode>()),
+        TotalContracts = record[Aliases.CountDistinctContracts].As<int>(),
+        TotalItems = record[Aliases.CountDistinctItems].As<int>()
     };
 }
