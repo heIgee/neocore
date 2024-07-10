@@ -1,0 +1,107 @@
+﻿@page "/contracts"
+
+@inherits NeocoreComponent
+
+@inject ContractRepository ContractRepository
+@inject VendorRepository VendorRepository
+@inject NavigationManager NavigationManager 
+
+<FilterComponent 
+    TEntity="Vendor" 
+    SelectedId="VendorId"
+    Entities="Vendors"
+    EntityId="@(v => v.Id)"
+    EntityName="@(v => v.Name)"
+    OnEntityFilter="UpdateQuery"
+/>
+
+<input class="mt-2 form-control w-50" type="date" 
+    @bind="DeliveryDateFrom" 
+    @bind:event="oninput" 
+    @onchange="() => UpdateQuery(VendorId)"
+/> @* TODO debounce? *@
+
+<h3 class="mt-2">Contracts</h3>
+
+<TableComponent Items="ContractList">
+        <Head>
+        <tr>
+            <th>Id</th>
+            <th>DeliveryDate</th>
+        </tr>
+    </Head>
+    <Row Context="contract">
+        <tr>
+            <td>@contract.Id</td>
+            <td>@contract.DeliveryDate</td>
+        </tr>
+    </Row>
+</TableComponent>
+
+@code {
+    public List<Contract> ContractList { get; set; } = new();
+
+    public List<Vendor> Vendors { get; set; } = new();
+
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "vendor")]
+    public int VendorId { get; set; }
+
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "from")]
+    public DateOnly DeliveryDateFrom { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (!IsPrerendering)
+        {
+            if (DeliveryDateFrom == DateOnly.MinValue)
+                DeliveryDateFrom = new DateOnly(2024, 01, 01);
+
+            if (Vendors.Count <= 0)
+                Vendors = [.. await VendorRepository.FindAll()];
+
+            await UpdateItemList();
+        }
+
+        await base.OnParametersSetAsync();
+    }
+
+    private async Task UpdateItemList()
+    {
+        Console.ForegroundColor = ConsoleColor.Red;
+        Console.WriteLine("EXPENSIVE DATABASE REQUEST");
+        Console.ResetColor();
+        if (VendorId <= 0)
+        {
+            ContractList = [.. await ContractRepository.FindByFilter(new()
+                {
+                    DeliveryDateFrom = DeliveryDateFrom
+                }
+            )];
+        }
+        else
+        {
+            ContractList = [.. await ContractRepository.FindByFilter(new()
+                {
+                    VendorId = VendorId,
+                    DeliveryDateFrom = DeliveryDateFrom
+                }
+            )];
+        }
+    }
+
+    public void UpdateQuery(int vendorId)
+    {
+        // if (VendorId != vendorId)
+        // {
+            NavigationManager.NavigateTo(
+                NavigationManager.GetUriWithQueryParameters(new Dictionary<string, object?>() 
+                { 
+                    { "vendor", vendorId },
+                    { "from", DeliveryDateFrom }
+                })
+            );
+        // }
+    }
+}

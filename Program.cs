@@ -24,6 +24,7 @@ public class Program
         builder.Services
             .AddScoped<ItemRepository>()
             .AddScoped<VendorRepository>()
+            .AddScoped<ContractRepository>()
         ;
 
         var app = builder.Build();
