@@ -6,7 +6,7 @@ namespace Neocore.ViewModels;
 
 public class VendorSummary : INeocoreViewModel<VendorSummary>
 {
-    public Vendor? Vendor { get; set; } = new();
+    public Vendor Vendor { get; set; } = new();
     public int TotalContracts { get; set; }
     public int TotalItems { get; set; }
 

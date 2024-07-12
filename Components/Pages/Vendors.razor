@@ -2,31 +2,27 @@
 
 @inherits NeocoreComponent
 
+@rendermode InteractiveServer
+
 @inject VendorRepository VendorRepository
 
 <h3>Vendors SUMMARY</h3>
 
-<TableComponent Items="VendorSummaries">
-    <Head>
-        <tr>
-            <th>Name</th>
-            <th>ContactInfo</th>
-            <th>TotalContracts</th>
-            <th>TotalItems</th>
-        </tr>
-    </Head>
-    <Row Context="sum">
-        <tr>
-            <td>@sum.Vendor?.Name</td>
-            <td>@sum.Vendor?.ContactInfo</td>
-            <td><a href="/contracts?vendor=@sum.Vendor?.Id">@sum.TotalContracts</a></td>
-            <td><a href="/items?vendor=@sum.Vendor?.Id">@sum.TotalItems</a></td>
-            <td></td>
-        </tr>
-    </Row>
-</TableComponent>
+<QuickGrid class="nc-grid" Items="VendorSummaries.AsQueryable()" Pagination="paginationState">
+    <PropertyColumn Property="s => s.Vendor.Name" Sortable="true" />
+    <PropertyColumn Property="s => s.Vendor.ContactInfo" />
+    <TemplateColumn Title="TotalContracts" Sortable="true" SortBy="GridSort<VendorSummary>.ByDescending(s => s.TotalContracts)">
+        <a href="/contracts?vendor=@context.Vendor?.Id">@context.TotalContracts</a>
+    </TemplateColumn>
+    <TemplateColumn Title="TotalItems" Sortable="true" SortBy="GridSort<VendorSummary>.ByDescending(s => s.TotalItems)">
+        <a href="/items?vendor=@context.Vendor?.Id">@context.TotalItems</a>
+    </TemplateColumn>
+    <Paginator State="paginationState"/>
+</QuickGrid>
 
 @code {
+    private PaginationState paginationState = new() { ItemsPerPage = 10 };
+
     public List<VendorSummary> VendorSummaries { get; set; } = new();
 
     protected override async Task OnInitializedAsync()

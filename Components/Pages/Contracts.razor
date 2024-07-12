@@ -23,24 +23,18 @@
 
 <h3 class="mt-2">Contracts</h3>
 
-<TableComponent Items="ContractList">
-        <Head>
-        <tr>
-            <th>Id</th>
-            <th>DeliveryDate</th>
-            <th>Signed with</th>
-        </tr>
-    </Head>
-    <Row Context="contract">
-        <tr>
-            <td>@contract.Id</td>
-            <td>@contract.DeliveryDate</td>
-            <td><a href="vendor/@contract.Vendor?.Id">@contract.Vendor?.Name</a></td>
-        </tr>
-    </Row>
-</TableComponent>
+<QuickGrid class="nc-grid" Items="ContractList.AsQueryable()" Pagination="paginationState">
+    <PropertyColumn Property="c => c.Id" Sortable="true" />
+    <PropertyColumn Property="c => c.DeliveryDate" Sortable="true" />
+    <TemplateColumn Title="Signed with" SortBy="GridSort<Contract>.ByDescending(c => c.Vendor == null ? null : c.Vendor.Name)">
+        <a href="vendor/@context.Vendor?.Id">@context.Vendor?.Name</a>
+    </TemplateColumn>
+    <Paginator State="paginationState" />
+</QuickGrid>
 
 @code {
+    private PaginationState paginationState = new() { ItemsPerPage = 10 };
+
     public List<Contract> ContractList { get; set; } = new();
 
     public List<Vendor> Vendors { get; set; } = new();

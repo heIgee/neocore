@@ -31,28 +31,20 @@
 
 <h3 class="mt-2">Items</h3>
 
-<TableComponent Items="ItemList">
-    <Head>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Manufacturer</th>
-            <th>Specifications</th>
-            <th>Price</th>
-        </tr>
-    </Head>
-    <Row Context="item">
-        <tr>
-            <td>@item.Name</td>
-            <td>@item.Type</td>
-            <td>@item.Manufacturer</td>
-            <td>@item.Specifications</td>
-            <td>$@item.Price</td>
-        </tr>
-    </Row>
-</TableComponent>
+<QuickGrid class="nc-grid" Items="ItemList.AsQueryable()" Pagination="paginationState">
+    <PropertyColumn Property="i => i.Name" Sortable="true" />
+    <PropertyColumn Property="i => i.Type" Sortable="true" />
+    <PropertyColumn Property="i => i.Manufacturer" Sortable="true" />
+    <PropertyColumn Property="i => i.Specifications" />
+    <TemplateColumn Title="Price" Sortable="true" SortBy="GridSort<Item>.ByDescending(c => c.Price)" >
+        $@context.Price
+    </TemplateColumn>
+    <Paginator State="paginationState" />
+</QuickGrid>
 
 @code {
+    private PaginationState paginationState = new() { ItemsPerPage = 10 };
+
     public List<Item> ItemList { get; set; } = new();
 
     public List<Vendor> Vendors { get; set; } = new();

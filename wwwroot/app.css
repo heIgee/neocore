@@ -42,10 +42,37 @@ h1:focus {
     color: white;
 }
 
-    .blazor-error-boundary::after {
-        content: "An error has occurred."
-    }
+.blazor-error-boundary::after {
+    content: "An error has occurred."
+}
 
 .darker-border-checkbox.form-check-input {
     border-color: #929292;
 }
+
+.nc-grid {
+    /*height: 100%;*/
+    width: 100%;
+}
+
+.nc-grid tr:nth-child(even) {
+    background: rgb(0, 0, 0, 0.05);
+}
+
+.nc-grid tr {
+    line-height: 2rem;
+}
+
+.nc-grid tbody * {
+    white-space: nowrap;
+    /*overflow: hidden;*/
+    max-width: 1rem;
+    text-overflow: ellipsis;
+
+}
+
+/*.nc-grid th, .nc-grid th button {
+    background-color: #1861ac;
+    color: antiquewhite !important;
+    font-weight: bold;
+}*/
