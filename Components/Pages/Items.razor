@@ -14,8 +14,20 @@
     Entities="Vendors"
     EntityId="@(v => v.Id)"
     EntityName="@(v => v.Name)"
-    OnEntityFilter="UpdateQueryVendor"
+    OnEntityFilter="UpdateQuery"
 />
+
+<input class="mt-2 form-control w-50" type="text"
+    @bind="MaxPrice"
+    @bind:event="oninput" 
+    @onchange="() => UpdateQuery(VendorId)"
+/> 
+
+<input class="mt-2 form-checkbox w-50" type="checkbox"
+    @bind="HasMultilpleVendors"
+    @bind:event="oninput" 
+    @onchange="() => { VendorId = 0; UpdateQuery(VendorId); }"
+/> 
 
 <h3 class="mt-2">Items</h3>
 
@@ -35,7 +47,7 @@
             <td>@item.Type</td>
             <td>@item.Manufacturer</td>
             <td>@item.Specifications</td>
-            <td>@item.Price</td>
+            <td>$@item.Price</td>
         </tr>
     </Row>
 </TableComponent>
@@ -49,10 +61,13 @@
     [SupplyParameterFromQuery(Name = "vendor")]
     public int VendorId { get; set; }
 
-    public Items()
-    {
-        EnableLifecycleLogging = true;
-    }
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "maxprice")]
+    public int MaxPrice { get; set; }
+
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "multivendor")]
+    public bool HasMultilpleVendors { get; set; }
 
     protected override async Task OnParametersSetAsync()
     {
@@ -62,6 +77,9 @@
             Console.WriteLine("BEFORE VENDORS SET");
             if (Vendors.Count <= 0)
                 Vendors = [.. await VendorRepository.FindAll()];
+            if (MaxPrice <= 0)
+                MaxPrice = 10000;
+
             Console.WriteLine("AFTER VENDORS SET");
             await UpdateItemList();
         }
@@ -72,27 +90,44 @@
         Console.ForegroundColor = ConsoleColor.Red;
         Console.WriteLine("EXPENSIVE DATABASE REQUEST");
         Console.ResetColor();
-        if (VendorId <= 0)
-        {
-            ItemList = [.. await ItemRepository.FindAll()];
-        }
-        else
-        {
-            ItemList = [.. await ItemRepository.FindByVendor(VendorId)];
-        }
+
+        ItemList = [.. await ItemRepository.FindByFilter(new() 
+            {
+                VendorId = VendorId > 0 ? VendorId : null,
+                MaxPrice = MaxPrice > 0 ? MaxPrice : null,
+                HasMultilpleVendors = HasMultilpleVendors ? HasMultilpleVendors : null
+            }
+        )];
+
+        // if (VendorId <= 0)
+        // {
+        //     ItemWithQuantityList = [.. await ItemRepository.FindAll()];
+        // }
+        // else
+        // {
+        //     ItemWithQuantityList = [.. await ItemRepository.FindByVendor(VendorId)];
+        // }
     }
 
-    public void UpdateQueryVendor(int vendorId)
+    public void UpdateQuery(int vendorId)
     {
         Console.WriteLine($"FILTER BY VENDOR: {VendorId} -> {vendorId}");
 
-        if (VendorId != vendorId)
-        {
-            // UpdateItemList() will be called, filtering accordingly
-            NavigationManager.NavigateTo(
-                NavigationManager.GetUriWithQueryParameter("vendor", vendorId)
-            );
-        }
+        // TODO inconsistency
+        if (HasMultilpleVendors && vendorId > 0)
+            HasMultilpleVendors = false;
+
+        // UpdateItemList() will be called, filtering accordingly
+        NavigationManager.NavigateTo(
+            NavigationManager.GetUriWithQueryParameters(
+                new Dictionary<string, object?>()
+                {
+                    { "vendor", vendorId > 0 ? vendorId : null },
+                    { "maxprice", MaxPrice > 0 ? MaxPrice : null },
+                    { "multivendor", HasMultilpleVendors ? HasMultilpleVendors : null }
+                }
+            )
+        );
     }
 
     // protected override async Task OnAfterRenderAsync(bool firstRender)

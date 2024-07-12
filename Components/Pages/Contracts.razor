@@ -28,12 +28,14 @@
         <tr>
             <th>Id</th>
             <th>DeliveryDate</th>
+            <th>Signed with</th>
         </tr>
     </Head>
     <Row Context="contract">
         <tr>
             <td>@contract.Id</td>
             <td>@contract.DeliveryDate</td>
+            <td><a href="vendor/@contract.Vendor?.Id">@contract.Vendor?.Name</a></td>
         </tr>
     </Row>
 </TableComponent>
@@ -55,40 +57,31 @@
     {
         if (!IsPrerendering)
         {
+            Console.WriteLine((await ContractRepository.FindAll()).ToString());
+
             if (DeliveryDateFrom == DateOnly.MinValue)
                 DeliveryDateFrom = new DateOnly(2024, 01, 01);
 
             if (Vendors.Count <= 0)
                 Vendors = [.. await VendorRepository.FindAll()];
 
-            await UpdateItemList();
+            await UpdateContracts();
         }
 
         await base.OnParametersSetAsync();
     }
 
-    private async Task UpdateItemList()
+    private async Task UpdateContracts()
     {
         Console.ForegroundColor = ConsoleColor.Red;
         Console.WriteLine("EXPENSIVE DATABASE REQUEST");
         Console.ResetColor();
-        if (VendorId <= 0)
-        {
-            ContractList = [.. await ContractRepository.FindByFilter(new()
-                {
-                    DeliveryDateFrom = DeliveryDateFrom
-                }
-            )];
-        }
-        else
-        {
-            ContractList = [.. await ContractRepository.FindByFilter(new()
-                {
-                    VendorId = VendorId,
-                    DeliveryDateFrom = DeliveryDateFrom
-                }
-            )];
-        }
+        ContractList = [.. await ContractRepository.FindByFilter(new()
+            {
+                VendorId = VendorId > 0 ? VendorId : null,
+                DeliveryDateFrom = DeliveryDateFrom
+            }
+        )];
     }
 
     public void UpdateQuery(int vendorId)
@@ -96,11 +89,13 @@
         // if (VendorId != vendorId)
         // {
             NavigationManager.NavigateTo(
-                NavigationManager.GetUriWithQueryParameters(new Dictionary<string, object?>() 
-                { 
-                    { "vendor", vendorId },
-                    { "from", DeliveryDateFrom }
-                })
+                NavigationManager.GetUriWithQueryParameters(
+                    new Dictionary<string, object?>() 
+                    { 
+                        { "vendor", vendorId > 0 ? vendorId : null },
+                        { "from", DeliveryDateFrom != DateOnly.MinValue ? DeliveryDateFrom : null }
+                    }
+                )
             );
         // }
     }

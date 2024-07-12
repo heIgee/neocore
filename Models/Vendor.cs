@@ -5,11 +5,15 @@ namespace Neocore.Models;
 
 public class Vendor : INeocoreNode<Vendor>
 {
-    public int Id { get; set; }
+    public int? Id { get; set; }
     public string? Name { get; set; }
     public string? ContactInfo { get; set; }
 
-    public static Vendor FromRecord(IRecord record) => FromNode(record[Aliases.Vendor].As<INode>());
+    public static Vendor FromRecord(IRecord record)
+    {
+        var node = record[Aliases.Vendor].As<INode>();
+        return node is null ? new() : FromNode(node);  
+    }
 
     public static Vendor FromNode(INode node) => new()
     {

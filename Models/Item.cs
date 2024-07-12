@@ -5,14 +5,18 @@ namespace Neocore.Models;
 
 public class Item : INeocoreNode<Item>
 {
-    public int Id { get; set; }
+    public int? Id { get; set; }
     public string? Name { get; set; }
     public string? Type { get; set; }
     public string? Manufacturer { get; set; }
     public string? Specifications { get; set; }
-    public float Price { get; set; }
+    public float? Price { get; set; }
 
-    public static Item FromRecord(IRecord record) => FromNode(record[Aliases.Item].As<INode>());
+    public static Item FromRecord(IRecord record)
+    {
+        var node = record[Aliases.Item].As<INode>();
+        return node is null ? new() : FromNode(node);
+    }
 
     public static Item FromNode(INode node) => new()
     {

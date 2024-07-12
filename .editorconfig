@@ -19,6 +19,9 @@ csharp_style_expression_bodied_accessors = true:silent
 csharp_style_expression_bodied_lambdas = true:silent
 csharp_style_expression_bodied_local_functions = false:silent
 
+# CA1507: Use nameof to express symbol names
+dotnet_diagnostic.CA1507.severity = silent
+
 [*.{cs,vb}]
 #### Naming styles ####
 

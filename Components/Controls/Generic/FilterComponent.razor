@@ -12,14 +12,9 @@
 @code {
     [Parameter] public int SelectedId { get; set; }
     [Parameter] public List<TEntity> Entities { get; set; } = new();
-    [Parameter] public Func<TEntity, int>? EntityId { get; set; }
-    [Parameter] public Func<TEntity, string>? EntityName { get; set; }
+    [Parameter] public Func<TEntity, int?>? EntityId { get; set; }
+    [Parameter] public Func<TEntity, string?>? EntityName { get; set; }
     [Parameter] public EventCallback<int> OnEntityFilter { get; set; }
-
-    public FilterComponent()
-    {
-        EnableLifecycleLogging = true;
-    }
 
     private async Task InvokeFilter()
     {

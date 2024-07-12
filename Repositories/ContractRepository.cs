@@ -3,7 +3,7 @@ using Neocore.Common;
 using Neocore.Components.Pages;
 using Neocore.Filters;
 using Neocore.Models;
-using System.Text;
+using Neocore.ViewModels;
 
 namespace Neocore.Repositories;
 
@@ -11,17 +11,28 @@ public class ContractRepository(IDriver driver) : NeocoreRepository(driver), ICo
 {
     public async Task<Contract> FindById(int id)
     {
-        const string query = $"MATCH ({Aliases.Contract}:Contract {{id: $id}}) RETURN {Aliases.Contract}";
-        return await ExecuteReadSingleAsync(
+        var (query, parameters) = new QueryBuilder()
+            .Match($"({Aliases.Contract}:Contract)")
+            .Where($"{Aliases.Contract}.id = $id", "id", id)
+            .Return($"{Aliases.Contract}")
+            .Build();
+
+        var contract = await ExecuteReadSingleAsync(
             query,
-            new { id },
+            parameters,
             Contract.FromRecord
         );
+
+        return contract;
     }
 
     public async Task<IEnumerable<Contract>> FindAll()
     {
-        const string query = $"MATCH ({Aliases.Contract}:Contract) RETURN {Aliases.Contract}";
+        var (query, _) = new QueryBuilder()
+            .Match($"({Aliases.Contract}:Contract)")
+            .Return($"{Aliases.Contract}")
+            .Build();
+
         return await ExecuteReadListAsync(
             query,
             new { },
@@ -29,42 +40,55 @@ public class ContractRepository(IDriver driver) : NeocoreRepository(driver), ICo
         );
     }
 
-    public async Task<IEnumerable<Contract>> FindByVendor(int vendorId)
-    {
-        const string query = @$"
-            MATCH ({Aliases.Vendor}:Vendor {{id: $vendorId}})<-[:SIGNED_WITH]-({Aliases.Contract}:Contract)
-            RETURN DISTINCT {Aliases.Contract}
-        ";
-        return await ExecuteReadListAsync(
-            query,
-            new { vendorId },
-            Contract.FromRecord
-        );
-    }
-
     public async Task<IEnumerable<Contract>> FindByFilter(ContractFilter filter)
     {
-        var query = new StringBuilder($"MATCH ({Aliases.Contract}:Contract)");
-        var parameters = new Dictionary<string, object>();
+        var builder = new QueryBuilder()
+            .Match($"({Aliases.Contract}:Contract)-[:SIGNED_WITH]->({Aliases.Vendor}:Vendor)");
+            //.OptionalMatch($"({Aliases.Contract}) -[:SIGNED_WITH]-> ({Aliases.Vendor}:Vendor)");
 
-        if (filter.VendorId.HasValue)
-        {
-            query.Append($" -[:SIGNED_WITH]-> ({Aliases.Vendor}:Vendor {{id: $vendorId}})");
-            parameters["vendorId"] = filter.VendorId.Value;
-        }
+        filter.Apply(builder);
 
-        if (filter.DeliveryDateFrom.HasValue)
-        {
-            query.Append($" WHERE {Aliases.Contract}.deliveryDate >= $deliveryDateFrom");
-            parameters["deliveryDateFrom"] = filter.DeliveryDateFrom.Value;
-        }
+        builder.Return($" DISTINCT {Aliases.Contract}, {Aliases.Vendor}");
 
-        query.Append($" RETURN DISTINCT {Aliases.Contract}");
+        var (query, parameters) = builder.Build();
 
         return await ExecuteReadListAsync(
-            query.ToString(),
+            query,
             parameters,
             Contract.FromRecord
         );
     }
+
+    public async Task<IEnumerable<ContractSummary>> FindByFilterWithSummary(ContractFilter filter)
+    {
+        var builder = new QueryBuilder()
+            //.Match($"({Aliases.Contract}:Contract)")
+            //.OptionalMatch($"({Aliases.Contract})-[:SIGNED_WITH]->({Aliases.Vendor}:Vendor)");
+            .Match($"({Aliases.Contract}:Contract)-[:SIGNED_WITH]->({Aliases.Vendor}:Vendor)");
+            //.OptionalMatch($"({Aliases.Contract})<-[r:SUPPLIED_UNDER]-({Aliases.Item}:Item)");
+        filter.Apply(builder);
+
+        builder.Return($"DISTINCT {Aliases.Contract}, {Aliases.Vendor}");
+
+        var (query, parameters) = builder.Build();
+
+        return await ExecuteReadListAsync(
+            query,
+            parameters,
+            ContractSummary.FromRecord
+        );
+    }   
+
+    //private static void ApplyFilter(QueryBuilder builder, ContractFilter filter)
+    //{
+    //    if (filter.VendorId.HasValue)
+    //    {
+    //        builder.Where($"{Aliases.Vendor}.id = $vendorId", "vendorId", filter.VendorId.Value);
+    //    }
+
+    //    if (filter.DeliveryDateFrom.HasValue)
+    //    {
+    //        builder.Where($"{Aliases.Contract}.deliveryDate >= $deliveryDateFrom", "deliveryDateFrom", filter.DeliveryDateFrom.Value);
+    //    }
+    //}
 }

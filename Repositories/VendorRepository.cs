@@ -9,53 +9,63 @@ public class VendorRepository(IDriver driver) : NeocoreRepository(driver), IVend
 {
     public async Task<Vendor> FindById(int id)
     {
-        const string query = $"MATCH ({Aliases.Vendor}:Vendor {{id: $id}}) RETURN {Aliases.Vendor}";
+        var (query, parameters) = new QueryBuilder()
+            .Match($"({Aliases.Vendor}:Vendor)")
+            .Where($"{Aliases.Vendor}.id = $id", "id", id)
+            .Return($"{Aliases.Vendor}")
+            .Build();
+
         return await ExecuteReadSingleAsync(
             query, 
-            new { id },
+            parameters,
             Vendor.FromRecord
         );
     }
 
     public async Task<IEnumerable<Vendor>> FindAll()
     {
-        const string query = $"MATCH ({Aliases.Vendor}:Vendor) RETURN {Aliases.Vendor}";
+        var (query, _) = new QueryBuilder()
+            .Match($"({Aliases.Vendor}:Vendor)")
+            .Return($"{Aliases.Vendor}")
+            .Build();
+
         return await ExecuteReadListAsync(
             query,
-            new {},
+            new { },
             Vendor.FromRecord
         );
     }
 
     public async Task<IEnumerable<VendorSummary>> FindAllWithSummary()
     {
-        const string query = @$"
-            MATCH ({Aliases.Vendor}:Vendor)
-            <-[:SIGNED_WITH]-(c:Contract)
-            <-[su:SUPPLIED_UNDER]-(i:Item) 
-            RETURN {Aliases.Vendor}, 
-                COUNT(DISTINCT c) AS {Aliases.CountDistinctContracts}, 
-                COUNT(DISTINCT i) AS {Aliases.CountDistinctItems}
-        ";
+        var (query, _) = new QueryBuilder()
+            .Match($"({Aliases.Vendor}:Vendor)")
+            .OptionalMatch($"({Aliases.Vendor})<-[:SIGNED_WITH]-({Aliases.Contract}:Contract)")
+            .OptionalMatch($"({Aliases.Contract})<-[:SUPPLIED_UNDER]-({Aliases.Item}:Item)")
+            .Return(@$"{Aliases.Vendor}, 
+                COUNT(DISTINCT {Aliases.Contract}) AS {Aliases.CountDistinctContracts},
+                COUNT(DISTINCT {Aliases.Item}) AS {Aliases.CountDistinctItems}")
+            .Build();
+
         return await ExecuteReadListAsync(
             query,
-            new {},
+            new { },
             VendorSummary.FromRecord
         );
     }
 
-    public async Task<IEnumerable<Vendor>> FindByItemType(string productType)
-    {
-        const string query = @$"
-            MATCH ({Aliases.Vendor}:Vendor)
-            <-[:SIGNED_WITH]-(Contract)
-            <-[:SUPPLIED_UNDER]-(p:Item {{type: $productType}}) 
-            RETURN DISTINCT {Aliases.Vendor}
-        ";
-        return await ExecuteReadListAsync(
-            query,
-            new { productType },
-            Vendor.FromRecord
-        );
-    }
+    //public async Task<IEnumerable<Vendor>> FindByItemType(string productType)
+    //{
+    //    const string query = @$"
+    //        MATCH ({Aliases.Vendor}:Vendor)
+    //        <-[:SIGNED_WITH]-(Contract)
+    //        <-[:SUPPLIED_UNDER]-(p:Item {{type: $productType}}) 
+    //        RETURN DISTINCT {Aliases.Vendor}
+    //    ";
+    //    return await ExecuteReadListAsync(
+    //        query,
+    //        new { productType },
+    //        Vendor.FromRecord
+    //    );
+    //}
 }

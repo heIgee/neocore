@@ -1,5 +1,6 @@
 ﻿using Neo4j.Driver;
 using Neocore.Common;
+using Neocore.Filters;
 using Neocore.Models;
 
 namespace Neocore.Repositories;
@@ -8,17 +9,26 @@ public class ItemRepository(IDriver driver) : NeocoreRepository(driver), IItemRe
 {
     public async Task<Item> FindById(int id)
     {
-        const string query = $"MATCH ({Aliases.Item}:Item {{id: $id}}) RETURN {Aliases.Item}";
+        var (query, parameters) = new QueryBuilder()
+            .Match($"({Aliases.Item}:Item)")
+            .Where($"{Aliases.Item}.id = $id", "id", id)
+            .Return($"{Aliases.Item}")
+            .Build();
+
         return await ExecuteReadSingleAsync(
             query,
-            new { id },
+            parameters,
             Item.FromRecord
         );
     }
 
     public async Task<IEnumerable<Item>> FindAll()
     {
-        const string query = $"MATCH ({Aliases.Item}:Item) RETURN {Aliases.Item}";
+        var (query, _) = new QueryBuilder()
+            .Match($"({Aliases.Item}:Item)")
+            .Return($"{Aliases.Item}")
+            .Build();
+
         return await ExecuteReadListAsync(
             query,
             new { },
@@ -28,13 +38,33 @@ public class ItemRepository(IDriver driver) : NeocoreRepository(driver), IItemRe
 
     public async Task<IEnumerable<Item>> FindByVendor(int vendorId)
     {
-        const string query = @$"
-            MATCH ({Aliases.Vendor}:Vendor {{id: $vendorId}})<-[:SIGNED_WITH]-(Contract)<-[su:SUPPLIED_UNDER]-({Aliases.Item}:Item) 
-            RETURN DISTINCT {Aliases.Item}
-        ";
+        var (query, parameters) = new QueryBuilder()
+            .Match($"({Aliases.Vendor}:Vendor)<-[:SIGNED_WITH]-(Contract)<-[:SUPPLIED_UNDER]-({Aliases.Item}:Item)")
+            .Where($"({Aliases.Vendor}).id = $vendorId", "vendorId", vendorId)
+            .Return($"DISTINCT {Aliases.Item}")
+            .Build();
+
         return await ExecuteReadListAsync(
             query,
-            new { vendorId },
+            parameters,
+            Item.FromRecord
+        );
+    }
+
+    public async Task<IEnumerable<Item>> FindByFilter(ItemFilter filter)
+    {
+        var builder = new QueryBuilder()
+            .Match($"({Aliases.Vendor}:Vendor)<-[:SIGNED_WITH]-(Contract)<-[:SUPPLIED_UNDER]-({Aliases.Item}:Item)");
+
+        filter.Apply(builder);
+
+        builder.Return($"DISTINCT {Aliases.Item}");
+
+        var (query, parameters) = builder.Build();
+
+        return await ExecuteReadListAsync(
+            query,
+            parameters,
             Item.FromRecord
         );
     }
