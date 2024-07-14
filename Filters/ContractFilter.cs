@@ -11,12 +11,14 @@ public class ContractFilter
     {
         if (VendorId.HasValue)
         {
-            builder.Where($"{Aliases.Vendor}.id = $vendorId", "vendorId", VendorId.Value);
+            builder.With($"{Aliases.Contract}, {Aliases.Vendor}")
+                .Where($"{Aliases.Vendor}.id = $vendorId", "vendorId", VendorId.Value);
         }
 
         if (DeliveryDateFrom.HasValue)
         {
-            builder.Where($"{Aliases.Contract}.deliveryDate >= $deliveryDateFrom", "deliveryDateFrom", DeliveryDateFrom.Value);
+            builder.With($"{Aliases.Contract}, {Aliases.Vendor}")
+                .Where($"{Aliases.Contract}.deliveryDate >= $deliveryDateFrom", "deliveryDateFrom", DeliveryDateFrom.Value);
         }
     }
 }

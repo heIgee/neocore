@@ -9,21 +9,22 @@ namespace Neocore.Repositories;
 
 public class ContractRepository(IDriver driver) : NeocoreRepository(driver), IContractRepository
 {
-    public async Task<Contract> FindById(int id)
+    public async Task<Contract?> FindById(int id)
     {
         var (query, parameters) = new QueryBuilder()
             .Match($"({Aliases.Contract}:Contract)")
             .Where($"{Aliases.Contract}.id = $id", "id", id)
-            .Return($"{Aliases.Contract}")
+            .OptionalMatch($"({Aliases.Item}:Item)-[su:SUPPLIED_UNDER]->({Aliases.Contract})")
+            .OptionalMatch($"({Aliases.Contract})-[:SIGNED_WITH]->({Aliases.Vendor}:Vendor)")
+            .Return($"{Aliases.Contract}, {Aliases.Vendor}, " +
+                $"COLLECT({{item: {Aliases.Item}, quantity: su.quantity}}) as {Aliases.ItemWithQuantityList}")
             .Build();
 
-        var contract = await ExecuteReadSingleAsync(
+        return await ExecuteReadSingleAsync(
             query,
             parameters,
             Contract.FromRecord
         );
-
-        return contract;
     }
 
     public async Task<IEnumerable<Contract>> FindAll()
@@ -43,8 +44,8 @@ public class ContractRepository(IDriver driver) : NeocoreRepository(driver), ICo
     public async Task<IEnumerable<Contract>> FindByFilter(ContractFilter filter)
     {
         var builder = new QueryBuilder()
-            .Match($"({Aliases.Contract}:Contract)-[:SIGNED_WITH]->({Aliases.Vendor}:Vendor)");
-            //.OptionalMatch($"({Aliases.Contract}) -[:SIGNED_WITH]-> ({Aliases.Vendor}:Vendor)");
+            .Match($"({Aliases.Contract}:Contract)")
+            .OptionalMatch($"({Aliases.Contract})-[:SIGNED_WITH]->({Aliases.Vendor}:Vendor)");
 
         filter.Apply(builder);
 
@@ -66,6 +67,7 @@ public class ContractRepository(IDriver driver) : NeocoreRepository(driver), ICo
             //.OptionalMatch($"({Aliases.Contract})-[:SIGNED_WITH]->({Aliases.Vendor}:Vendor)");
             .Match($"({Aliases.Contract}:Contract)-[:SIGNED_WITH]->({Aliases.Vendor}:Vendor)");
             //.OptionalMatch($"({Aliases.Contract})<-[r:SUPPLIED_UNDER]-({Aliases.Item}:Item)");
+
         filter.Apply(builder);
 
         builder.Return($"DISTINCT {Aliases.Contract}, {Aliases.Vendor}");
@@ -78,17 +80,40 @@ public class ContractRepository(IDriver driver) : NeocoreRepository(driver), ICo
             ContractSummary.FromRecord
         );
     }   
+    
+    public async Task Update(int id, Contract contract)
+    {
+        var query = @"
+            MATCH (oldC:Contract {id: $id})
+            DETACH DELETE oldC
+            CREATE (c:Contract {id: $id, deliveryDate: $deliveryDate})
+            WITH c
+            MATCH (v:Vendor {id: $vendorId})
+            MERGE (c)-[:SIGNED_WITH]->(v)
+            WITH c
+            UNWIND $items AS item
+            MATCH (i:Item {id: item.itemId})
+            MERGE (i)-[su:SUPPLIED_UNDER]->(c)
+            SET su.quantity = item.quantity
+            RETURN 0
+        ";
 
-    //private static void ApplyFilter(QueryBuilder builder, ContractFilter filter)
-    //{
-    //    if (filter.VendorId.HasValue)
-    //    {
-    //        builder.Where($"{Aliases.Vendor}.id = $vendorId", "vendorId", filter.VendorId.Value);
-    //    }
+        //RETURN c, v, collect({item: i, quantity: su.quantity}) as iql;
 
-    //    if (filter.DeliveryDateFrom.HasValue)
-    //    {
-    //        builder.Where($"{Aliases.Contract}.deliveryDate >= $deliveryDateFrom", "deliveryDateFrom", filter.DeliveryDateFrom.Value);
-    //    }
-    //}
+        var parameters = new
+        {
+            id,
+            deliveryDate = contract.DeliveryDate,
+            vendorId = contract.Vendor?.Id,
+            items = contract.Items?.Select(iwq => 
+                new { itemId = iwq.Item?.Id, quantity = iwq.Quantity }
+            ).ToList()
+        };
+
+        await ExecuteWriteSingleAsync(
+            query,
+            parameters
+            //Contract.FromRecord
+        );
+    }
 }

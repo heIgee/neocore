@@ -1,0 +1,147 @@
+﻿@page "/contract/{Id:int?}"
+
+@inherits NeocoreComponent
+
+@inject ContractRepository ContractRepository
+@inject VendorRepository VendorRepository
+@inject ItemRepository ItemRepository
+@inject NavigationManager NavigationManager
+
+<div class="col col-md-6 me-auto">
+    @if (Id is not null && Contract is not null)
+    {
+        <h3>Updating Contract #@Id</h3>
+
+        <button class="btn d-block text-white btn-info mb-2 py-1" @onclick="Confirm">Confirm</button>
+
+        <label class="form-label" for="deliveryDate">Delivery date:</label>
+        <input class="form-control mb-2" type="date" id="deliveryDate" @bind-value="@DeliveryDateBinder" />
+
+        <FilterComponent
+            TEntity="Vendor"
+            SelectedId="@(Contract.Vendor is not null && Contract.Vendor.Id.HasValue ? Contract.Vendor.Id.Value : 0)"
+            Entities="AllVendors"
+            EntityId="@(v => v.Id)"
+            EntityName="@(v => v.Name)"
+            OnEntityFilter="ChangeVendor" 
+            Label="Signed with:"
+            ZeroLabel="None"
+        />
+
+        <h4>Items included:</h4>
+        @if (Contract.Items is not null)
+        {
+            @foreach (var itemq in Contract.Items)
+            {
+                <div class="input-group">
+                    <FilterComponent 
+                        TEntity="Item"
+                        SelectedId="@(itemq.Item is not null && itemq.Item.Id.HasValue ? itemq.Item.Id.Value : 0)"
+                        Entities="AllItems"
+                        EntityId="@(v => v.Id)"
+                        EntityName="@(v => $"[{v.Id}] {v.Name}")"
+                        OnEntityFilter="@((id) => ChangeItem(itemq, id))"
+                        ZeroLabel="---" 
+                    />
+
+                    <input class="form-control mb-2" type="number" id="quantity" @bind-value="@itemq.Quantity" />
+
+                    <button class="btn btn-sm btn-outline-danger mb-2" @onclick="@(() => RemoveItem(itemq))">❌</button>
+                </div>
+            }
+
+            <button class="btn btn-success py-1" @onclick="AddBlankItem">Add</button>
+        }
+    }
+    else 
+    {
+        <h3>Adding new Contract</h3>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public int? Id { get; set; }
+
+    public Contract? Contract { get; set; }
+
+    public List<Vendor> AllVendors { get; set; } = new();
+    public List<Item> AllItems { get; set; } = new();
+
+    private DateOnly? DeliveryDateBinder
+    {
+        get => Contract?.DeliveryDate?.ToDateOnly();
+        set
+        {
+            if (Contract is not null && value.HasValue)
+            {
+                Contract.DeliveryDate = new Neo4j.Driver.LocalDate(value.Value);
+            }
+        }
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (!IsPrerendering)
+        {
+            Console.WriteLine($"ID: {Id}");
+
+            if (Id.HasValue)
+                Contract = await ContractRepository.FindById(Id.Value);
+
+            if (Contract is not null && Contract.Id.HasValue)
+                Console.WriteLine(Contract.Id.Value);
+            else
+                Console.WriteLine("EMPTY");
+
+            if (AllVendors.Count <= 0)
+                AllVendors = [.. await VendorRepository.FindAll()];
+
+            if (AllItems.Count <= 0)
+                AllItems = [.. await ItemRepository.FindAll()];
+        }
+
+        await base.OnParametersSetAsync();
+    }
+
+    private async Task ChangeVendor(int vendorId)
+    {
+        if (Contract is null)
+            return;
+
+        var vendor = await VendorRepository.FindById(vendorId);
+
+        Contract.Vendor = vendor;
+    }
+
+    private async Task ChangeItem(ItemWithQuantity itemWithQuantity, int itemId)
+    {
+        var item = await ItemRepository.FindById(itemId);
+
+        if (item is null)
+        {
+            return;
+        }
+
+        Console.WriteLine(itemWithQuantity.Quantity);
+        itemWithQuantity.Item = item;
+    }
+
+    private void AddBlankItem()
+    {
+        Contract?.Items?.Add(new());
+    }
+
+    private void RemoveItem(ItemWithQuantity itemWithQuantity)
+    {
+        Contract?.Items?.Remove(itemWithQuantity);
+    }
+
+    private async Task Confirm()
+    {
+        if (Id.HasValue && Contract is not null)
+            await ContractRepository.Update(Id.Value, Contract);
+
+        NavigationManager.NavigateTo("/contracts");
+    }
+}

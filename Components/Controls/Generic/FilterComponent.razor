@@ -1,12 +1,20 @@
 ﻿@typeparam TEntity
 @inherits NeocoreComponent
 
-<select class="form-select w-50" @bind="@SelectedId" @bind:after="InvokeFilter" >
-    <option value="0">All</option>
+@if (!string.IsNullOrEmpty(Label))
+{
+    <label class="mb-2" for="filter-select">@Label</label>
+}
+<select id="filter-select" class="form-select mb-2" data-live-search="true" @bind="@SelectedId" @bind:after="InvokeFilter">
+    <option value="0">@ZeroLabel</option>
     @foreach (var entity in Entities)
     {
         <option @key="EntityId?.Invoke(entity)" value="@EntityId?.Invoke(entity)">@EntityName?.Invoke(entity)</option>
     }
+    @* @for (int i = 30; i < 300; i++)
+    {
+        <option @key="i" value="i">Option @i</option>
+    } *@
 </select>
 
 @code {
@@ -15,6 +23,8 @@
     [Parameter] public Func<TEntity, int?>? EntityId { get; set; }
     [Parameter] public Func<TEntity, string?>? EntityName { get; set; }
     [Parameter] public EventCallback<int> OnEntityFilter { get; set; }
+    [Parameter] public string Label { get; set; } = string.Empty;
+    [Parameter] public string ZeroLabel { get; set; } = "All";
 
     private async Task InvokeFilter()
     {

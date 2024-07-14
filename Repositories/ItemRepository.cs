@@ -7,7 +7,7 @@ namespace Neocore.Repositories;
 
 public class ItemRepository(IDriver driver) : NeocoreRepository(driver), IItemRepository
 {
-    public async Task<Item> FindById(int id)
+    public async Task<Item?> FindById(int id)
     {
         var (query, parameters) = new QueryBuilder()
             .Match($"({Aliases.Item}:Item)")
@@ -54,9 +54,13 @@ public class ItemRepository(IDriver driver) : NeocoreRepository(driver), IItemRe
     public async Task<IEnumerable<Item>> FindByFilter(ItemFilter filter)
     {
         var builder = new QueryBuilder()
-            .Match($"({Aliases.Vendor}:Vendor)<-[:SIGNED_WITH]-(Contract)<-[:SUPPLIED_UNDER]-({Aliases.Item}:Item)");
+            .Match($"({Aliases.Item}:Item)")
+            .OptionalMatch($"({Aliases.Vendor}:Vendor)<-[:SIGNED_WITH]-(Contract)<-[:SUPPLIED_UNDER]-({Aliases.Item})");
+        //.Match($"({Aliases.Item}:Item)-[:SUPPLIED_UNDER]->(Contract)-[:SIGNED_WITH]->({Aliases.Vendor}:Vendor)"); // wwww
 
         filter.Apply(builder);
+
+        //builder.OptionalMatch($"({Aliases.Vendor}:Vendor)<-[:SIGNED_WITH]-(Contract)<-[:SUPPLIED_UNDER]-({Aliases.Item})");
 
         builder.Return($"DISTINCT {Aliases.Item}");
 

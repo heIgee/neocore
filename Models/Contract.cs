@@ -1,7 +1,5 @@
 ﻿using Neo4j.Driver;
 using Neocore.Common;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 
 namespace Neocore.Models;
 
@@ -12,7 +10,6 @@ public class Contract : INeocoreNode<Contract>
 
     public Vendor? Vendor { get; set; }
     public List<ItemWithQuantity>? Items { get; set; }
-
 
     public static Contract FromRecord(IRecord record)
     {

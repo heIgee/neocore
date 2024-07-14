@@ -7,7 +7,7 @@ namespace Neocore.Repositories;
 
 public class VendorRepository(IDriver driver) : NeocoreRepository(driver), IVendorRepository
 {
-    public async Task<Vendor> FindById(int id)
+    public async Task<Vendor?> FindById(int id)
     {
         var (query, parameters) = new QueryBuilder()
             .Match($"({Aliases.Vendor}:Vendor)")

@@ -55,6 +55,12 @@ h1:focus {
     width: 100%;
 }
 
+@media (width > 1200px) {
+    .nc-grid .nc-narrow {
+        max-width: 3rem;
+    }
+}
+
 .nc-grid tr:nth-child(even) {
     background: rgb(0, 0, 0, 0.05);
 }
@@ -64,11 +70,10 @@ h1:focus {
 }
 
 .nc-grid tbody * {
-    white-space: nowrap;
-    /*overflow: hidden;*/
+ /*   white-space: nowrap;
+    overflow: hidden;
     max-width: 1rem;
-    text-overflow: ellipsis;
-
+    text-overflow: ellipsis;*/
 }
 
 /*.nc-grid th, .nc-grid th button {

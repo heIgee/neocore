@@ -8,22 +8,26 @@
 
 <h4>VENDOR ID: @VendorId</h4>
 
-<FilterComponent 
-    TEntity="Vendor" 
-    SelectedId="VendorId"
-    Entities="Vendors"
-    EntityId="@(v => v.Id)"
-    EntityName="@(v => v.Name)"
-    OnEntityFilter="UpdateQuery"
-/>
+<div class="col col-md-6 me-auto">
+    <FilterComponent 
+        TEntity="Vendor" 
+        SelectedId="VendorId"
+        Entities="Vendors"
+        EntityId="@(v => v.Id)"
+        EntityName="@(v => v.Name)"
+        OnEntityFilter="UpdateQuery"
+    />
 
-<input class="mt-2 form-control w-50" type="text"
-    @bind="MaxPrice"
-    @bind:event="oninput" 
-    @onchange="() => UpdateQuery(VendorId)"
-/> 
+    <label for="maxPrice">Max price: </label>
+    <input class="mt-2 form-control" id="maxPrice" type="text"
+        @bind="MaxPrice"
+        @bind:event="oninput" 
+        @onchange="() => UpdateQuery(VendorId)"
+    /> 
+</div>
 
-<input class="mt-2 form-checkbox w-50" type="checkbox"
+<label for="multipleVendorsCheck">From multiple vendors: </label>
+<input class="mt-2 form-checkbox" id="multipleVendorsCheck" type="checkbox"
     @bind="HasMultilpleVendors"
     @bind:event="oninput" 
     @onchange="() => { VendorId = 0; UpdateQuery(VendorId); }"
@@ -32,6 +36,11 @@
 <h3 class="mt-2">Items</h3>
 
 <QuickGrid class="nc-grid" Items="ItemList.AsQueryable()" Pagination="paginationState">
+    <TemplateColumn class="nc-narrow" Title="Id"
+        SortBy="GridSort<Item>.ByAscending(i => i.Id)">
+        <a href="item/@context.Id">@context.Id</a>
+    </TemplateColumn>
+
     <PropertyColumn Property="i => i.Name" Sortable="true" />
     <PropertyColumn Property="i => i.Type" Sortable="true" />
     <PropertyColumn Property="i => i.Manufacturer" Sortable="true" />

@@ -6,27 +6,35 @@
 @inject VendorRepository VendorRepository
 @inject NavigationManager NavigationManager 
 
-<FilterComponent 
-    TEntity="Vendor" 
-    SelectedId="VendorId"
-    Entities="Vendors"
-    EntityId="@(v => v.Id)"
-    EntityName="@(v => v.Name)"
-    OnEntityFilter="UpdateQuery"
-/>
+<div class="col col-md-6 me-auto">
+    <FilterComponent 
+        TEntity="Vendor" 
+        SelectedId="VendorId"
+        Entities="Vendors"
+        EntityId="@(v => v.Id)"
+        EntityName="@(v => v.Name)"
+        OnEntityFilter="UpdateQuery"
+        Label="By vendor:"
+    />
 
-<input class="mt-2 form-control w-50" type="date" 
-    @bind="DeliveryDateFrom" 
-    @bind:event="oninput" 
-    @onchange="() => UpdateQuery(VendorId)"
-/> @* TODO debounce? *@
+    <label for="deliveryDateFrom">Delivery date from:</label>
+    <input class="mt-2 form-control" id="deliveryDateFrom" type="date" 
+        @bind="DeliveryDateFrom" 
+        @bind:event="oninput" 
+        @onchange="() => UpdateQuery(VendorId)"
+    /> @* TODO debounce? *@
+</div>
 
 <h3 class="mt-2">Contracts</h3>
 
 <QuickGrid class="nc-grid" Items="ContractList.AsQueryable()" Pagination="paginationState">
-    <PropertyColumn Property="c => c.Id" Sortable="true" />
+    <TemplateColumn class="nc-narrow" Title="Id"
+        SortBy="GridSort<Contract>.ByAscending(c => c.Id)">
+        <a href="contract/@context.Id">@context.Id</a>
+    </TemplateColumn>
     <PropertyColumn Property="c => c.DeliveryDate" Sortable="true" />
-    <TemplateColumn Title="Signed with" SortBy="GridSort<Contract>.ByDescending(c => c.Vendor == null ? null : c.Vendor.Name)">
+    <TemplateColumn Title="Signed with" 
+        SortBy="GridSort<Contract>.ByAscending(c => c.Vendor == null ? null : c.Vendor.Name)">
         <a href="vendor/@context.Vendor?.Id">@context.Vendor?.Name</a>
     </TemplateColumn>
     <Paginator State="paginationState" />

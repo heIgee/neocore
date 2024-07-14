@@ -7,6 +7,6 @@ public interface IVendorRepository
 {
     Task<IEnumerable<Vendor>> FindAll();
     Task<IEnumerable<VendorSummary>> FindAllWithSummary();
-    Task<Vendor> FindById(int id);
+    Task<Vendor?> FindById(int id);
     //Task<IEnumerable<Vendor>> FindByItemType(string productType);
 }

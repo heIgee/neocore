@@ -9,6 +9,11 @@
 <h3>Vendors SUMMARY</h3>
 
 <QuickGrid class="nc-grid" Items="VendorSummaries.AsQueryable()" Pagination="paginationState">
+    <TemplateColumn class="nc-narrow" Title="Id"
+        SortBy="GridSort<VendorSummary>.ByAscending(s => s.Vendor == null ? null : s.Vendor.Id)">
+        <a href="vendor/@context.Vendor?.Id">@context.Vendor?.Id</a>
+    </TemplateColumn>
+
     <PropertyColumn Property="s => s.Vendor.Name" Sortable="true" />
     <PropertyColumn Property="s => s.Vendor.ContactInfo" />
     <TemplateColumn Title="TotalContracts" Sortable="true" SortBy="GridSort<VendorSummary>.ByDescending(s => s.TotalContracts)">
@@ -29,6 +34,8 @@
     {
         if (!IsPrerendering)
         {
+            // string @_ = "піська";
+            // Console.WriteLine(@_);
             // Console.WriteLine("ULTRA HEAVY REQUEST " + Guid.NewGuid());
             VendorSummaries = [.. await VendorRepository.FindAllWithSummary()];
         }
