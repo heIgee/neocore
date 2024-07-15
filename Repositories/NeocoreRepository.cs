@@ -1,5 +1,4 @@
 ﻿using Neo4j.Driver;
-using System.Text;
 
 namespace Neocore.Repositories;
 
@@ -40,8 +39,8 @@ public abstract class NeocoreRepository(IDriver driver)
         await using var session = Driver.AsyncSession();
         await session.ExecuteWriteAsync(async tx =>
         {
+            Console.WriteLine(parameters);
             var cursor = await tx.RunAsync(query, parameters);
-            //return await cursor.SingleAsync(mapper);
         });
     }
 }

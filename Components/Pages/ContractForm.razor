@@ -8,55 +8,61 @@
 @inject NavigationManager NavigationManager
 
 <div class="col col-md-6 me-auto">
-    @if (Id is not null && Contract is not null)
-    {
-        <h3>Updating Contract #@Id</h3>
-
-        <button class="btn d-block text-white btn-info mb-2 py-1" @onclick="Confirm">Confirm</button>
-
-        <label class="form-label" for="deliveryDate">Delivery date:</label>
-        <input class="form-control mb-2" type="date" id="deliveryDate" @bind-value="@DeliveryDateBinder" />
-
-        <FilterComponent
-            TEntity="Vendor"
-            SelectedId="@(Contract.Vendor is not null && Contract.Vendor.Id.HasValue ? Contract.Vendor.Id.Value : 0)"
-            Entities="AllVendors"
-            EntityId="@(v => v.Id)"
-            EntityName="@(v => v.Name)"
-            OnEntityFilter="ChangeVendor" 
-            Label="Signed with:"
-            ZeroLabel="None"
-        />
-
-        <h4>Items included:</h4>
-        @if (Contract.Items is not null)
-        {
-            @foreach (var itemq in Contract.Items)
-            {
-                <div class="input-group">
-                    <FilterComponent 
-                        TEntity="Item"
-                        SelectedId="@(itemq.Item is not null && itemq.Item.Id.HasValue ? itemq.Item.Id.Value : 0)"
-                        Entities="AllItems"
-                        EntityId="@(v => v.Id)"
-                        EntityName="@(v => $"[{v.Id}] {v.Name}")"
-                        OnEntityFilter="@((id) => ChangeItem(itemq, id))"
-                        ZeroLabel="---" 
-                    />
-
-                    <input class="form-control mb-2" type="number" id="quantity" @bind-value="@itemq.Quantity" />
-
-                    <button class="btn btn-sm btn-outline-danger mb-2" @onclick="@(() => RemoveItem(itemq))">❌</button>
-                </div>
-            }
-
-            <button class="btn btn-success py-1" @onclick="AddBlankItem">Add</button>
-        }
-    }
-    else 
+    @if (Id is null)
     {
         <h3>Adding new Contract</h3>
     }
+    else 
+    {
+        <h3>Updating Contract #@Id</h3>
+    }
+
+    <div class="mb-2">
+        <button class="btn text-white btn-info py-1" @onclick="Confirm">Confirm</button>
+        @if (Id is not null)
+        {
+            <button class="btn text-white btn-danger py-1 ms-1" @onclick="Delete">Delete</button>
+        }
+    </div>
+
+    <label class="form-label" for="deliveryDate">Delivery date:</label>
+    <input class="form-control mb-2" type="date" id="deliveryDate" @bind-value="@DeliveryDateBinder" />
+
+    <FilterComponent
+        TEntity="Vendor"
+        SelectedId="@(Contract?.Vendor is not null && Contract.Vendor.Id.HasValue ? Contract.Vendor.Id.Value : 0)"
+        Entities="AllVendors"
+        EntityId="@(v => v.Id)"
+        EntityName="@(v => v.Name)"
+        OnEntityFilter="ChangeVendor" 
+        Label="Signed with:"
+        ZeroLabel="None"
+    />
+
+    <h4>Items included:</h4>
+    @if (Contract?.Items is not null)
+    {
+        @foreach (var itemq in Contract.Items)
+        {
+            <div class="input-group">
+                <FilterComponent 
+                    TEntity="Item"
+                    SelectedId="@(itemq.Item is not null && itemq.Item.Id.HasValue ? itemq.Item.Id.Value : 0)"
+                    Entities="AllItems"
+                    EntityId="@(v => v.Id)"
+                    EntityName="@(v => $"[{v.Id}] {v.Name}")"
+                    OnEntityFilter="@((id) => ChangeItem(itemq, id))"
+                    ZeroLabel="---" 
+                />
+
+                <input class="form-control mb-2" type="number" id="quantity" @bind-value="@itemq.Quantity" />
+
+                <button class="btn btn-sm btn-outline-danger mb-2" @onclick="@(() => RemoveItem(itemq))">❌</button>
+            </div>
+        }
+
+    }
+    <button class="btn btn-success py-1" @onclick="AddBlankItem">Add</button>
 </div>
 
 @code {
@@ -70,7 +76,7 @@
 
     private DateOnly? DeliveryDateBinder
     {
-        get => Contract?.DeliveryDate?.ToDateOnly();
+        get => Contract?.DeliveryDate?.ToDateOnly() ?? new(2024, 01, 01);
         set
         {
             if (Contract is not null && value.HasValue)
@@ -87,19 +93,29 @@
             Console.WriteLine($"ID: {Id}");
 
             if (Id.HasValue)
+            {
                 Contract = await ContractRepository.FindById(Id.Value);
 
-            if (Contract is not null && Contract.Id.HasValue)
-                Console.WriteLine(Contract.Id.Value);
+                if (Contract is null || !Contract.Id.HasValue)
+                {
+                    // force load to ensure proper render (mere header otherwise)
+                    NavigationManager.NavigateTo("/contract", forceLoad: true);
+                }
+            }
             else
-                Console.WriteLine("EMPTY");
+            {
+                Contract = new();
+            }
 
             if (AllVendors.Count <= 0)
                 AllVendors = [.. await VendorRepository.FindAll()];
 
             if (AllItems.Count <= 0)
                 AllItems = [.. await ItemRepository.FindAll()];
+
         }
+
+        StateHasChanged();
 
         await base.OnParametersSetAsync();
     }
@@ -129,7 +145,17 @@
 
     private void AddBlankItem()
     {
-        Contract?.Items?.Add(new());
+        if (Contract is null)
+            return;
+
+        if (Contract.Items is null)
+        {
+            Contract.Items = new() { new() };
+        }
+        else
+        {
+            Contract.Items.Add(new());
+        }
     }
 
     private void RemoveItem(ItemWithQuantity itemWithQuantity)
@@ -139,9 +165,27 @@
 
     private async Task Confirm()
     {
-        if (Id.HasValue && Contract is not null)
-            await ContractRepository.Update(Id.Value, Contract);
+        if (Contract is null)
+            return;
 
+        if (Id.HasValue)
+        {
+            await ContractRepository.Update(Id.Value, Contract);
+        }
+        else 
+        {
+            await ContractRepository.Add(Contract);
+        }
+
+        NavigationManager.NavigateTo("/contracts");
+    }
+
+    private async Task Delete()
+    {
+        if (Contract is null || !Id.HasValue)
+            return;
+
+        await ContractRepository.Delete(Id.Value);
         NavigationManager.NavigateTo("/contracts");
     }
 }
