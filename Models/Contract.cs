@@ -23,7 +23,6 @@ public class Contract : INeocoreNode<Contract>
         if (record.TryGetValue(Aliases.Vendor, out var vendorValue))
         {
             var vendorNode = vendorValue?.As<INode>();
-            //Console.WriteLine($"FOUND Contract's Vendor: {vendorNode?.Id}");
             contract.Vendor = vendorNode is null ? null : Vendor.FromNode(vendorNode);
         }
 

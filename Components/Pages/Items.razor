@@ -75,23 +75,21 @@
         await base.OnParametersSetAsync();
         if (!IsPrerendering) 
         {
-            Console.WriteLine("BEFORE VENDORS SET");
             if (Vendors.Count <= 0)
                 Vendors = [.. await VendorRepository.FindAll()];
+
             if (MaxPrice <= 0)
                 MaxPrice = 10000;
 
-            Console.WriteLine("AFTER VENDORS SET");
             await UpdateItemList();
         }
     }
 
     private async Task UpdateItemList()
     {
-        Console.ForegroundColor = ConsoleColor.Red;
-        Console.WriteLine("EXPENSIVE DATABASE REQUEST");
-        Console.ResetColor();
-
+        // Console.ForegroundColor = ConsoleColor.Red;
+        // Console.WriteLine("EXPENSIVE DATABASE REQUEST");
+        // Console.ResetColor();
         ItemList = [.. await ItemRepository.FindByFilter(new() 
             {
                 VendorId = VendorId > 0 ? VendorId : null,
@@ -112,8 +110,6 @@
 
     public void UpdateQuery(int vendorId)
     {
-        Console.WriteLine($"FILTER BY VENDOR: {VendorId} -> {vendorId}");
-
         // TODO inconsistency
         if (HasMultilpleVendors && vendorId > 0)
             HasMultilpleVendors = false;

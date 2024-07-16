@@ -6,7 +6,10 @@
 
 @inject VendorRepository VendorRepository
 
-<h3>Vendors SUMMARY</h3>
+<h3 class="mt-2">
+    Vendors
+    <a href="/vendor" class="btn btn-sm ms-2 py-1 btn-success">+ New</a>
+</h3>
 
 <QuickGrid class="nc-grid" Items="VendorSummaries.AsQueryable()" Pagination="paginationState">
     <TemplateColumn class="nc-narrow" Title="Id"
@@ -34,8 +37,6 @@
     {
         if (!IsPrerendering)
         {
-            // string @_ = "піська";
-            // Console.WriteLine(@_);
             // Console.WriteLine("ULTRA HEAVY REQUEST " + Guid.NewGuid());
             VendorSummaries = [.. await VendorRepository.FindAllWithSummary()];
         }

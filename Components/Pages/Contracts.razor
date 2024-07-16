@@ -62,8 +62,6 @@
     {
         if (!IsPrerendering)
         {
-            Console.WriteLine((await ContractRepository.FindAll()).ToString());
-
             if (DeliveryDateFrom == DateOnly.MinValue)
                 DeliveryDateFrom = new DateOnly(2024, 01, 01);
 
@@ -78,9 +76,9 @@
 
     private async Task UpdateContracts()
     {
-        Console.ForegroundColor = ConsoleColor.Red;
-        Console.WriteLine("EXPENSIVE DATABASE REQUEST");
-        Console.ResetColor();
+        // Console.ForegroundColor = ConsoleColor.Red;
+        // Console.WriteLine("EXPENSIVE DATABASE REQUEST");
+        // Console.ResetColor();
         ContractList = [.. await ContractRepository.FindByFilter(new()
             {
                 VendorId = VendorId > 0 ? VendorId : null,

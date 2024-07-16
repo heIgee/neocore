@@ -84,8 +84,8 @@ public class ContractRepository(IDriver driver) : NeocoreRepository(driver), ICo
     public async Task Delete(int id)
     {
         const string query = @"
-            MATCH (oldC:Contract {id: $id})
-            DETACH DELETE oldC
+            MATCH (c:Contract {id: $id})
+            DETACH DELETE c
         ";
         
         await ExecuteWriteSingleAsync(
@@ -159,9 +159,9 @@ public class ContractRepository(IDriver driver) : NeocoreRepository(driver), ICo
     private async Task<int> NewId()
     {
         const string query = @$"
-            MATCH ({Aliases.Contract}:Contract) 
-            RETURN {Aliases.Contract}.id as id
-            ORDER BY {Aliases.Contract}.id desc 
+            MATCH (c:Contract)
+            RETURN c.id as id
+            ORDER BY c.id desc
             LIMIT 1
         ";
 

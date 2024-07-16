@@ -57,7 +57,8 @@ h1:focus {
 
 @media (width > 1200px) {
     .nc-grid .nc-narrow {
-        max-width: 3rem;
+        /*max-width: 3rem;*/
+        max-width: 10%;
     }
 }
 

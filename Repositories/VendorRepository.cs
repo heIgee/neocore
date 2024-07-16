@@ -2,6 +2,7 @@
 using Neocore.Common;
 using Neocore.Models;
 using Neocore.ViewModels;
+using System.Text;
 
 namespace Neocore.Repositories;
 
@@ -68,4 +69,82 @@ public class VendorRepository(IDriver driver) : NeocoreRepository(driver), IVend
     //        Vendor.FromRecord
     //    );
     //}
+
+        
+    public async Task Delete(int id)
+    {
+        const string query = @"
+            MATCH (v:Vendor {id: $id})
+            DETACH DELETE v
+        ";
+        
+        await ExecuteWriteSingleAsync(
+            query,
+            new { id }
+        );
+    }
+
+    public async Task Update(int id, Vendor vendor)
+    {
+        _ = await FindById(id) ?? throw new InvalidOperationException(@$"
+            Cannot update non-existent {nameof(Vendor)} (id: {id})
+        ");
+
+        //await Delete(id);
+        //await Add(vendor);
+
+        var query = new StringBuilder(@" 
+            MATCH (v:Vendor {id: $id})
+            SET v.name = $name, v.contactInfo = $contactInfo
+        "); // TODO aliases
+
+        object parameters = new
+        {
+            id,
+            name = vendor.Name,
+            contactInfo = vendor.ContactInfo
+        };
+
+        await ExecuteWriteSingleAsync(
+            query.ToString(),
+            parameters
+        );
+    }
+
+    public async Task Add(Vendor vendor)
+    {
+        int id = await NewId();
+
+        var query = new StringBuilder(@" 
+            CREATE (v:Vendor {id: $id, name: $name, contactInfo: $contactInfo})
+        "); // TODO aliases
+
+        object parameters = new
+        {
+            id,
+            name = vendor.Name,
+            contactInfo = vendor.ContactInfo
+        };
+
+        await ExecuteWriteSingleAsync(
+            query.ToString(),
+            parameters
+        );
+    }
+
+    private async Task<int> NewId()
+    {
+        const string query = @$"
+            MATCH (v:Vendor)
+            RETURN v.id as id
+            ORDER BY v.id desc
+            LIMIT 1
+        ";
+
+        return await ExecuteReadSingleAsync(
+            query,
+            new { },
+            r => r["id"].As<int>()
+        ) + 1;
+    }
 }

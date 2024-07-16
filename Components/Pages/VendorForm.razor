@@ -1,0 +1,91 @@
+﻿@page "/vendor/{Id:int?}"
+
+@inherits NeocoreComponent
+
+@inject VendorRepository VendorRepository
+@inject NavigationManager NavigationManager
+
+<div class="col col-md-6 me-auto">
+    @if (Id is null)
+    {
+        <h3>Adding new Vendor</h3>
+    }
+    else
+    {
+        <h3>Updating Vendor #@Id</h3>
+    }
+
+    <div class="mb-2">
+        <button class="btn text-white btn-info py-1" @onclick="Confirm">Confirm</button>
+        @if (Id is not null)
+        {
+            <button class="btn text-white btn-danger py-1 ms-1" @onclick="Delete">Delete</button>
+        }
+    </div>
+
+    @if (Vendor is not null)
+    {
+        <label class="form-label" for="name">Name:</label>
+        <input class="form-control mb-2" type="text" id="name" @bind-value="@Vendor.Name" />
+
+        <label class="form-label" for="contactInfo">Contact info:</label>
+        <input class="form-control mb-2" type="text" id="contactInfo" @bind-value="@Vendor.ContactInfo" />
+    }
+
+</div>
+
+@code {
+    [Parameter]
+    public int? Id { get; set; }
+
+    public Vendor? Vendor { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (!IsPrerendering)
+        {
+            if (Id.HasValue)
+            {
+                Vendor = await VendorRepository.FindById(Id.Value);
+
+                if (Vendor is null || !Vendor.Id.HasValue)
+                {
+                    // force load to ensure proper render (mere header otherwise)
+                    NavigationManager.NavigateTo("/vendor", forceLoad: true);
+                }
+            }
+            else
+            {
+                Vendor = new();
+            }
+        }
+
+        await base.OnParametersSetAsync();
+    }
+
+    private async Task Confirm()
+    {
+        if (Vendor is null)
+            return;
+
+        if (Id.HasValue)
+        {
+            await VendorRepository.Update(Id.Value, Vendor);
+        }
+        else
+        {
+            await VendorRepository.Add(Vendor);
+        }
+
+        NavigationManager.NavigateTo("/vendors");
+    }
+
+    private async Task Delete()
+    {
+        if (Vendor is null || !Id.HasValue)
+            return;
+
+        await VendorRepository.Delete(Id.Value);
+        NavigationManager.NavigateTo("/vendors");
+    }
+}
