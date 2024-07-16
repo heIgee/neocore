@@ -69,7 +69,6 @@ public class VendorRepository(IDriver driver) : NeocoreRepository(driver), IVend
     //        Vendor.FromRecord
     //    );
     //}
-
         
     public async Task Delete(int id)
     {
@@ -101,8 +100,8 @@ public class VendorRepository(IDriver driver) : NeocoreRepository(driver), IVend
         object parameters = new
         {
             id,
-            name = vendor.Name,
-            contactInfo = vendor.ContactInfo
+            name = vendor.Name ?? string.Empty,
+            contactInfo = vendor.ContactInfo ?? string.Empty
         };
 
         await ExecuteWriteSingleAsync(
@@ -122,8 +121,8 @@ public class VendorRepository(IDriver driver) : NeocoreRepository(driver), IVend
         object parameters = new
         {
             id,
-            name = vendor.Name,
-            contactInfo = vendor.ContactInfo
+            name = vendor.Name ?? string.Empty,
+            contactInfo = vendor.ContactInfo ?? string.Empty
         };
 
         await ExecuteWriteSingleAsync(

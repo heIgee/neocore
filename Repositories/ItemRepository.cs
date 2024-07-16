@@ -2,6 +2,7 @@
 using Neocore.Common;
 using Neocore.Filters;
 using Neocore.Models;
+using System.Text;
 
 namespace Neocore.Repositories;
 
@@ -71,5 +72,88 @@ public class ItemRepository(IDriver driver) : NeocoreRepository(driver), IItemRe
             parameters,
             Item.FromRecord
         );
+    }
+
+    public async Task Delete(int id)
+    {
+        const string query = @"
+            MATCH (i:Item {id: $id})
+            DETACH DELETE i
+        ";
+        
+        await ExecuteWriteSingleAsync(
+            query,
+            new { id }
+        );
+    }
+
+    public async Task Update(int id, Item item)
+    {
+        _ = await FindById(id) ?? throw new InvalidOperationException(@$"
+            Cannot update non-existent {nameof(Item)} (id: {id})
+        ");
+
+        var query = new StringBuilder(@" 
+            MATCH (i:Item {id: $id})
+            SET i.name = $name, i.type = $type, i.manufacturer = $manufacturer,
+                i.specifications = $specifications, i.price = $price
+        "); // TODO aliases
+
+        object parameters = new
+        {
+            id,
+            name = item.Name ?? string.Empty,
+            type = item.Type ?? string.Empty,
+            manufacturer = item.Manufacturer ?? string.Empty,
+            specifications = item.Specifications ?? string.Empty,
+            price = item.Price ?? 0.0f
+        };
+
+        await ExecuteWriteSingleAsync(
+            query.ToString(),
+            parameters
+        );
+    }
+
+    public async Task Add(Item item)
+    {
+        int id = await NewId();
+
+        var query = new StringBuilder(@" 
+            CREATE (i:Item {id: $id, name: $name, type: $type, 
+                manufacturer: $manufacturer, specifications: $specifications, 
+                price: $price})
+        "); // TODO aliases
+
+        object parameters = new
+        {
+            id,
+            name = item.Name ?? string.Empty,
+            type = item.Type ?? string.Empty,
+            manufacturer = item.Manufacturer ?? string.Empty,
+            specifications = item.Specifications ?? string.Empty,
+            price = item.Price ?? 0.0f
+        };
+
+        await ExecuteWriteSingleAsync(
+            query.ToString(),
+            parameters
+        );
+    }
+
+    private async Task<int> NewId()
+    {
+        const string query = @$"
+            MATCH (i:Item)
+            RETURN i.id as id
+            ORDER BY i.id desc
+            LIMIT 1
+        ";
+
+        return await ExecuteReadSingleAsync(
+            query,
+            new { },
+            r => r["id"].As<int>()
+        ) + 1;
     }
 }

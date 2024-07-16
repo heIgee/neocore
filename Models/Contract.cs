@@ -40,4 +40,18 @@ public class Contract : INeocoreNode<Contract>
         Id = node.Properties["id"].As<int>(),
         DeliveryDate = node.Properties["deliveryDate"].As<LocalDate>()
     };
+
+    //public static Contract FromNode(INode node)
+    //{
+    //    var contract = new Contract();
+    //    var props = node.Properties;
+
+    //    contract.Id = props.TryGetValue("id", out var id)
+    //        ? id.As<int>() : null;
+
+    //    contract.DeliveryDate = props.TryGetValue("deliveryDate", out var deliveryDate)
+    //        ? deliveryDate.As<LocalDate>() : null;
+
+    //    return contract;
+    //}
 }
