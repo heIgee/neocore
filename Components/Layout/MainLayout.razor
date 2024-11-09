@@ -1,24 +1,64 @@
 ﻿@inherits LayoutComponentBase
+@inject IAuthService AuthService
+@inject NavigationManager Nav
 
-<div class="page">
-    <div class="sidebar">
-        <NavMenu />
-    </div>
+<PageTitle>Neocore</PageTitle>
 
-    <main>
-        <div class="top-row px-4">
-            <a href="https://github.com/heIgee" target="_blank">by helgee</a>
-            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">docs</a>
+@if (!AuthService.IsAuthenticated)
+{
+    @if (!isLoginPage)
+    {
+        <RedirectToLogin />
+    }
+    else
+    {
+        @Body
+    }
+}
+else
+{
+    <div class="page">
+        <div class="sidebar">
+            <NavMenu />
         </div>
-
-        <article class="content px-4">
-            @Body
-        </article>
-    </main>
-</div>
+        <main>
+            <div class="top-row px-4">
+                <span class="me-auto">
+                    You are:
+                    <strong>@AuthService.CurrentUser?.Name (@AuthService.CurrentUser?.Role)</strong>
+                </span>
+                <button class="btn btn-link text-warning" @onclick="SignOut">sign out</button>
+                <a href="https://github.com/heIgee" target="_blank">by helgee</a>
+                <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">docs</a>
+            </div>
+            <article class="content px-4">
+                @Body
+            </article>
+        </main>
+    </div>
+}
 
 <div id="blazor-error-ui">
     An unhandled error has occurred.
     <a href="" class="reload">Reload</a>
     <a class="dismiss">🗙</a>
 </div>
+
+@code {
+    private bool isLoginPage => new Uri(Nav.Uri).AbsolutePath.EndsWith("/login", StringComparison.OrdinalIgnoreCase);
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await AuthService.InitializeUser();
+        if (firstRender) 
+        {
+            StateHasChanged();
+        }
+    }
+
+    private async Task SignOut()
+    {
+        await AuthService.SignOut();
+        Nav.NavigateTo("/login");
+    }
+}

@@ -1,7 +1,7 @@
 ﻿using Neocore.Filters;
 using Neocore.Models;
 
-namespace Neocore.Repositories;
+namespace Neocore.Repositories.Abstract;
 public interface IContractRepository
 {
     Task<IEnumerable<Contract>> FindAll();

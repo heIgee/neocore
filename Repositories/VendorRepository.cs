@@ -1,6 +1,7 @@
 ﻿using Neo4j.Driver;
 using Neocore.Common;
 using Neocore.Models;
+using Neocore.Repositories.Abstract;
 using Neocore.ViewModels;
 using System.Text;
 

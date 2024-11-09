@@ -1,0 +1,36 @@
+﻿@inject NavigationManager Nav
+@inject IAuthService AuthService
+@inject IJSRuntime JSRuntime
+
+@if (AuthService.HasAccess(MinimumRole))
+{
+    @ChildContent
+}
+else
+{
+    <div class="container mt-4 text-center">
+        <div class="alert alert-danger">
+            <h4>Access Denied</h4>
+            <p>You do not have permission to access this page.</p>
+            <p>Minimum role: <strong>@MinimumRole</strong></p>
+            <p>Your role: <strong>@AuthService.CurrentUser?.Role</strong></p>
+            <button class="btn btn-primary" @onclick="GoBack">
+                Return
+            </button>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    [Parameter, EditorRequired]
+    public UserRole MinimumRole { get; set; }
+
+    private async Task GoBack()
+    {
+        // TODO: handle same page case
+        await JSRuntime.InvokeVoidAsync("history.back");
+    }
+}

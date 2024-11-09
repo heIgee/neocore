@@ -5,49 +5,50 @@
 @inject ItemRepository ItemRepository
 @inject NavigationManager NavigationManager
 
-<div class="col col-md-6 me-auto">
-    @if (Id is null)
-    {
-        <h3>Adding new Item</h3>
-    }
-    else
-    {
-        <h3>Updating Item #@Id</h3>
-    }
-
-    <div class="mb-2">
-        <button class="btn text-white btn-info py-1" @onclick="Confirm">Confirm</button>
-        @if (Id is not null)
+<RoleGuard MinimumRole="UserRole.Editor">
+    <div class="col col-md-6 me-auto">
+        @if (Id is null)
         {
-            <button class="btn text-white btn-danger py-1 ms-1" @onclick="Delete">Delete</button>
+            <h3>Adding new Item</h3>
+        }
+        else
+        {
+            <h3>Updating Item #@Id</h3>
+        }
+
+        <div class="mb-2">
+            <button class="btn text-white btn-info py-1" @onclick="Confirm">Confirm</button>
+            @if (Id is not null)
+            {
+                <button class="btn text-white btn-danger py-1 ms-1" @onclick="Delete">Delete</button>
+            }
+        </div>
+
+        @if (Item is not null)
+        {
+            <form novalidate>
+
+                <label class="form-label" for="name">Name:</label>
+                <input class="form-control mb-2" type="text" id="name" @bind-value="@Item.Name" />
+
+                <label class="form-label" for="type">Type:</label> @* // TODO: restrict types to enum *@
+                <input class="form-control mb-2" type="text" id="type" @bind-value="@Item.Type" />
+
+                <label class="form-label" for="manufacturer">Manufacturer:</label>
+                <input class="form-control mb-2" type="text" id="manufacturer" @bind-value="@Item.Manufacturer" />
+
+                <label class="form-label" for="specifications">Specifications:</label>
+                <input class="form-control mb-2" type="text" id="specifications" @bind-value="@Item.Specifications" />
+
+                <label class="form-label" for="price">Price:</label>
+                <input class="form-control mb-2" type="number" step="0.01" min="0" id="price" @bind-value="@Item.Price" />
+
+            </form>
+
+            ////
         }
     </div>
-
-    @if (Item is not null)
-    {
-        <form novalidate>
-
-            <label class="form-label" for="name">Name:</label>
-            <input class="form-control mb-2" type="text" id="name" @bind-value="@Item.Name" />
-
-            <label class="form-label" for="type">Type:</label> @* // TODO: restrict types to enum *@
-            <input class="form-control mb-2" type="text" id="type" @bind-value="@Item.Type" />
-
-            <label class="form-label" for="manufacturer">Manufacturer:</label>
-            <input class="form-control mb-2" type="text" id="manufacturer" @bind-value="@Item.Manufacturer" />
-
-            <label class="form-label" for="specifications">Specifications:</label>
-            <input class="form-control mb-2" type="text" id="specifications" @bind-value="@Item.Specifications" />
-
-            <label class="form-label" for="price">Price:</label>
-            <input class="form-control mb-2" type="number" step="0.01" min="0" id="price" @bind-value="@Item.Price" />
-
-        </form>
-
-        ////
-    }
-
-</div>
+</RoleGuard>
 
 
 @code {

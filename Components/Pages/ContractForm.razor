@@ -7,63 +7,65 @@
 @inject ItemRepository ItemRepository
 @inject NavigationManager NavigationManager
 
-<div class="col col-md-6 me-auto">
-    @if (Id is null)
-    {
-        <h3>Adding new Contract</h3>
-    }
-    else 
-    {
-        <h3>Updating Contract #@Id</h3>
-    }
-
-    <div class="mb-2">
-        <button class="btn text-white btn-info py-1" @onclick="Confirm">Confirm</button>
-        @if (Id is not null)
+<RoleGuard MinimumRole="UserRole.Editor">
+    <div class="col col-md-6 me-auto">
+        @if (Id is null)
         {
-            <button class="btn text-white btn-danger py-1 ms-1" @onclick="Delete">Delete</button>
+            <h3>Adding new Contract</h3>
         }
+        else 
+        {
+            <h3>Updating Contract #@Id</h3>
+        }
+
+        <div class="mb-2">
+            <button class="btn text-white btn-info py-1" @onclick="Confirm">Confirm</button>
+            @if (Id is not null)
+            {
+                <button class="btn text-white btn-danger py-1 ms-1" @onclick="Delete">Delete</button>
+            }
+        </div>
+
+        <label class="form-label" for="deliveryDate">Delivery date:</label>
+        <input class="form-control mb-2" type="date" id="deliveryDate" @bind-value="@DeliveryDateBinder" />
+
+        <FilterComponent
+            TEntity="Vendor"
+            SelectedId="@(Contract?.Vendor is not null && Contract.Vendor.Id.HasValue ? Contract.Vendor.Id.Value : 0)"
+            Entities="AllVendors"
+            EntityId="@(v => v.Id)"
+            EntityName="@(v => v.Name)"
+            OnEntityFilter="ChangeVendor" 
+            Label="Signed with:"
+            ZeroLabel="None"
+        />
+
+        <h4>Items included:</h4>
+        @if (Contract?.Items is not null)
+        {
+            @foreach (var itemq in Contract.Items)
+            {
+                <div class="input-group">
+                    <FilterComponent 
+                        TEntity="Item"
+                        SelectedId="@(itemq.Item is not null && itemq.Item.Id.HasValue ? itemq.Item.Id.Value : 0)"
+                        Entities="AllItems"
+                        EntityId="@(v => v.Id)"
+                        EntityName="@(v => $"[{v.Id}] {v.Name}")"
+                        OnEntityFilter="@((id) => ChangeItem(itemq, id))"
+                        ZeroLabel="---" 
+                    />
+
+                    <input class="form-control mb-2" type="number" id="quantity" @bind-value="@itemq.Quantity" />
+
+                    <button class="btn btn-sm btn-outline-danger mb-2" @onclick="@(() => RemoveItem(itemq))">❌</button>
+                </div>
+            }
+
+        }
+        <button class="btn btn-success py-1" @onclick="AddBlankItem">Add</button>
     </div>
-
-    <label class="form-label" for="deliveryDate">Delivery date:</label>
-    <input class="form-control mb-2" type="date" id="deliveryDate" @bind-value="@DeliveryDateBinder" />
-
-    <FilterComponent
-        TEntity="Vendor"
-        SelectedId="@(Contract?.Vendor is not null && Contract.Vendor.Id.HasValue ? Contract.Vendor.Id.Value : 0)"
-        Entities="AllVendors"
-        EntityId="@(v => v.Id)"
-        EntityName="@(v => v.Name)"
-        OnEntityFilter="ChangeVendor" 
-        Label="Signed with:"
-        ZeroLabel="None"
-    />
-
-    <h4>Items included:</h4>
-    @if (Contract?.Items is not null)
-    {
-        @foreach (var itemq in Contract.Items)
-        {
-            <div class="input-group">
-                <FilterComponent 
-                    TEntity="Item"
-                    SelectedId="@(itemq.Item is not null && itemq.Item.Id.HasValue ? itemq.Item.Id.Value : 0)"
-                    Entities="AllItems"
-                    EntityId="@(v => v.Id)"
-                    EntityName="@(v => $"[{v.Id}] {v.Name}")"
-                    OnEntityFilter="@((id) => ChangeItem(itemq, id))"
-                    ZeroLabel="---" 
-                />
-
-                <input class="form-control mb-2" type="number" id="quantity" @bind-value="@itemq.Quantity" />
-
-                <button class="btn btn-sm btn-outline-danger mb-2" @onclick="@(() => RemoveItem(itemq))">❌</button>
-            </div>
-        }
-
-    }
-    <button class="btn btn-success py-1" @onclick="AddBlankItem">Add</button>
-</div>
+</RoleGuard>
 
 @code {
     [Parameter]

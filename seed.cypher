@@ -27,6 +27,10 @@ create (c6:Contract {id: 6, deliveryDate: date('2024-07-25')})
 create (c7:Contract {id: 7, deliveryDate: date('2024-07-30')})
 create (c8:Contract {id: 8, deliveryDate: date('2024-08-01')})
 
+create (u1:User {id: 1, name: 'Don', password: 'owner', role: 'owner'})
+create (u2:User {id: 2, name: 'Joe', password: 'editor', role: 'editor'})
+create (u3:User {id: 3, name: 'Kam', password: 'viewer', role: 'viewer'})
+
 create (c1)-[:SIGNED_WITH]->(s1)
 create (c2)-[:SIGNED_WITH]->(s1)
 create (c3)-[:SIGNED_WITH]->(s2)

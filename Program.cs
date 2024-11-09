@@ -1,6 +1,9 @@
 using Neocore.Components;
 using Neo4j.Driver;
 using Neocore.Repositories;
+using Blazored.LocalStorage;
+using Neocore.Auth;
+using Neocore.Repositories.Abstract;
 
 namespace Neocore;
 
@@ -25,6 +28,9 @@ public class Program
             .AddScoped<ItemRepository>()
             .AddScoped<VendorRepository>()
             .AddScoped<ContractRepository>()
+            .AddScoped<IUserRepository, UserRepository>()
+            .AddScoped<IAuthService, AuthService>()
+            .AddBlazoredLocalStorage()
         ;
 
         var app = builder.Build();

@@ -1,0 +1,81 @@
+﻿@page "/login"
+
+@inherits NeocoreComponent
+
+@inject IAuthService AuthService
+@inject NavigationManager Nav
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h3 class="card-title text-center mb-4">Sign In</h3>
+
+                    @if (_error)
+                    {
+                        <div class="alert alert-danger">
+                            Invalid username or password
+                        </div>
+                    }
+
+                    <div class="mb-3">
+                        <label class="form-label">Username</label>
+                        <input type="text" class="form-control"
+                               @bind="Username" @bind:event="oninput" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Password</label>
+                        <input type="password" class="form-control"
+                               @bind="Password" @bind:event="oninput" />
+                    </div>
+
+                    <button class="btn btn-primary w-100" @onclick="SignIn">
+                        Sign In
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@code {
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "returnUrl")]
+    public string? ReturnUrl { get; set; }
+
+    private string Username = "";
+    private string Password = "";
+    private bool _error;
+
+    protected override void OnInitialized()
+    {
+        if (AuthService.IsAuthenticated)
+        {
+            Redirect();
+        }
+    }
+
+    private void Redirect() 
+    {
+        Console.WriteLine("Redirect FROM login");
+        Console.WriteLine(ReturnUrl);
+        Nav.NavigateTo(ReturnUrl ?? "/");
+    }
+
+    private async Task SignIn()
+    {
+        _error = false;
+
+        if (await AuthService.SignIn(Username, Password))
+        {
+            Redirect();
+        }
+        else
+        {
+            _error = true;
+        }
+    }
+}

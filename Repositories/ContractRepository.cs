@@ -2,6 +2,7 @@
 using Neocore.Common;
 using Neocore.Filters;
 using Neocore.Models;
+using Neocore.Repositories.Abstract;
 using Neocore.ViewModels;
 using System.Text;
 

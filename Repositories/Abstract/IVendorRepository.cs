@@ -1,7 +1,7 @@
 ﻿using Neocore.Models;
 using Neocore.ViewModels;
 
-namespace Neocore.Repositories;
+namespace Neocore.Repositories.Abstract;
 
 public interface IVendorRepository
 {
