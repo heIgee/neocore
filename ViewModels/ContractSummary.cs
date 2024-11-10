@@ -6,12 +6,12 @@ namespace Neocore.ViewModels;
 // TODO: deprecated?
 public class ContractSummary : INeocoreViewModel<ContractSummary>
 {
-    public Contract? Contract { get; set; } = new();
+    public ContractExtended? Contract { get; set; } = new();
     public Vendor? Vendor { get; set; } = new();
 
     public static ContractSummary FromRecord(IRecord record) => new()
     {
-        Contract = Contract.FromRecord(record),
+        Contract = ContractExtended.FromRecord(record),
         Vendor = Vendor.FromRecord(record),
     };
 }

@@ -29,6 +29,8 @@ public class Program
             .AddScoped<VendorRepository>()
             .AddScoped<ContractRepository>()
             .AddScoped<IUserRepository, UserRepository>()
+            .AddScoped<SaleRepository>()
+            .AddScoped<EmployeeRepository>()
             .AddScoped<IAuthService, AuthService>()
             .AddBlazoredLocalStorage()
         ;

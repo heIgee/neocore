@@ -13,11 +13,11 @@ public class VendorSummary : INeocoreViewModel<VendorSummary>
     public static VendorSummary FromRecord(IRecord record) => new()
     {
         Vendor = Vendor.FromRecord(record),
-        TotalContracts = record[Aliases.CountDistinctContracts].As<int>(),
-        TotalItems = record[Aliases.CountDistinctItems].As<int>()
+        TotalContracts = record[Al.CountDistinctContracts].As<int>(),
+        TotalItems = record[Al.CountDistinctItems].As<int>()
     };
 }
 
-// foreach (var c in Vendor.Contracts) foreach (var i in c.Items) count++ 
+// foreach (var c in Employee.Contracts) foreach (var i in c.Items) count++ 
 
 

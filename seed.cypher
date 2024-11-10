@@ -31,6 +31,32 @@ create (u1:User {id: 1, name: 'Don', password: 'owner', role: 'owner'})
 create (u2:User {id: 2, name: 'Joe', password: 'editor', role: 'editor'})
 create (u3:User {id: 3, name: 'Kam', password: 'viewer', role: 'viewer'})
 
+// Customers
+create (cu1:Customer {id: 1, fullName: 'John Smith'})
+create (cu2:Customer {id: 2, fullName: 'Mary Johnson'})
+create (cu3:Customer {id: 3, fullName: 'Robert Davis'})
+
+// Employees
+create (e1:Employee {id: 1, fullName: 'Alice Wilson'})
+create (e2:Employee {id: 2, fullName: 'Bob Miller'})
+create (e3:Employee {id: 3, fullName: 'Carol Brown'})
+
+// Sales
+create (sa1:Sale {id: 1, total: 1500.0, date: date('2024-10-01')})
+create (sa2:Sale {id: 2, total: 2200.0, date: date('2024-10-05')})
+create (sa3:Sale {id: 3, total: 800.0, date: date('2024-10-08')})
+
+// Repairs
+create (r1:Repair {id: 1, status: 'HandedOver', isWarranty: true, cause: 'Faulty RAM', price: 0.0, handedDate: date('2024-10-02'), returnedDate: null})
+create (r2:Repair {id: 2, status: 'Returned', isWarranty: false, cause: 'Broken screen', price: 200.0, handedDate: date('2024-09-25'), returnedDate: date('2024-10-01')})
+create (r3:Repair {id: 3, status: 'InProgress', isWarranty: true, cause: 'GPU artifacts', price: 0.0, handedDate: date('2024-10-07'), returnedDate: null})
+
+// Builds
+create (b1:Build {id: 1, name: 'Gaming PC', price: 2000.0})
+create (b2:Build {id: 2, name: 'Office PC', price: 1200.0})
+
+///
+
 create (c1)-[:SIGNED_WITH]->(s1)
 create (c2)-[:SIGNED_WITH]->(s1)
 create (c3)-[:SIGNED_WITH]->(s2)
@@ -57,3 +83,47 @@ create (i9)-[:SUPPLIED_UNDER {quantity: 60}]->(c8)
 create (i10)-[:SUPPLIED_UNDER {quantity: 80}]->(c4)
 create (i11)-[:SUPPLIED_UNDER {quantity: 90}]->(c7)
 create (i12)-[:SUPPLIED_UNDER {quantity: 30}]->(c8)
+
+// Sale relationships
+create (sa1)-[:ORDERED_BY]->(cu1)
+create (sa2)-[:ORDERED_BY]->(cu2)
+create (sa3)-[:ORDERED_BY]->(cu3)
+
+create (sa1)-[:SOLD_BY]->(e1)
+create (sa2)-[:SOLD_BY]->(e2)
+create (sa3)-[:SOLD_BY]->(e3)
+
+create (sa1)-[:INCLUDES {quantity: 1, warrantyTerms: '2 years standard warranty'}]->(i6)
+create (sa2)-[:INCLUDES {quantity: 1, warrantyTerms: '3 years extended warranty'}]->(i1)
+create (sa2)-[:INCLUDES {quantity: 1, warrantyTerms: '3 years extended warranty'}]->(i2)
+create (sa3)-[:INCLUDES {quantity: 2, warrantyTerms: '1 year standard warranty'}]->(i4)
+
+// Repair relationships
+create (r1)-[:INVOLVES]->(i1)
+create (r2)-[:INVOLVES]->(i4)
+create (r3)-[:INVOLVES]->(i2)
+
+create (r1)-[:REQUESTED_BY]->(cu2)
+create (r2)-[:REQUESTED_BY]->(cu3)
+create (r3)-[:REQUESTED_BY]->(cu2)
+
+create (r1)-[:HANDLED_BY]->(e2)
+create (r2)-[:HANDLED_BY]->(e1)
+create (r3)-[:HANDLED_BY]->(e3)
+
+// Build relationships
+create (b1)-[:CONSISTS_OF]->(i1)
+create (b1)-[:CONSISTS_OF]->(i2)
+create (b1)-[:CONSISTS_OF]->(i3)
+create (b1)-[:CONSISTS_OF]->(i5)
+
+create (b2)-[:CONSISTS_OF]->(i7)
+create (b2)-[:CONSISTS_OF]->(i9)
+create (b2)-[:CONSISTS_OF]->(i10)
+create (b2)-[:CONSISTS_OF]->(i11)
+
+create (b1)-[:ORDERED_BY]->(cu1)
+create (b2)-[:ORDERED_BY]->(cu3)
+
+create (b1)-[:SOLD_BY]->(e1)
+create (b2)-[:SOLD_BY]->(e2)

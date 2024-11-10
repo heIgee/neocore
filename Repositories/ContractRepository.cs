@@ -10,68 +10,68 @@ namespace Neocore.Repositories;
 
 public class ContractRepository(IDriver driver) : NeocoreRepository(driver), IContractRepository
 {
-    public async Task<Contract?> FindById(int id)
+    public async Task<ContractExtended?> FindById(int id)
     {
         var (query, parameters) = new QueryBuilder()
-            .Match($"({Aliases.Contract}:Contract)")
-            .Where($"{Aliases.Contract}.id = $id", "id", id)
-            .OptionalMatch($"({Aliases.Item}:Item)-[su:SUPPLIED_UNDER]->({Aliases.Contract})")
-            .OptionalMatch($"({Aliases.Contract})-[:SIGNED_WITH]->({Aliases.Vendor}:Vendor)")
-            .Return($"{Aliases.Contract}, {Aliases.Vendor}, " +
-                $"COLLECT({{item: {Aliases.Item}, quantity: su.quantity}}) as {Aliases.ItemWithQuantityList}")
+            .Match($"({Al.Contract}:Contract)")
+            .Where($"{Al.Contract}.id = $id", "id", id)
+            .OptionalMatch($"({Al.Item}:Item)-[su:SUPPLIED_UNDER]->({Al.Contract})")
+            .OptionalMatch($"({Al.Contract})-[:SIGNED_WITH]->({Al.Vendor}:Employee)")
+            .Return($"{Al.Contract}, {Al.Vendor}, " +
+                $"COLLECT({{item: {Al.Item}, quantity: su.quantity}}) as {Al.ItemWithQuantityList}")
             .Build();
 
         return await ExecuteReadSingleAsync(
             query,
             parameters,
-            Contract.FromRecord
+            ContractExtended.FromRecord
         );
     }
 
-    public async Task<IEnumerable<Contract>> FindAll()
+    public async Task<IEnumerable<ContractExtended>> FindAll()
     {
         var (query, _) = new QueryBuilder()
-            .Match($"({Aliases.Contract}:Contract)")
-            .Return($"{Aliases.Contract}")
+            .Match($"({Al.Contract}:Contract)")
+            .Return($"{Al.Contract}")
             .Build();
 
         return await ExecuteReadListAsync(
             query,
             new { },
-            Contract.FromRecord
+            ContractExtended.FromRecord
         );
     }
 
-    public async Task<IEnumerable<Contract>> FindByFilter(ContractFilter filter)
+    public async Task<IEnumerable<ContractExtended>> FindByFilter(ContractFilter filter)
     {
         var builder = new QueryBuilder()
-            .Match($"({Aliases.Contract}:Contract)")
-            .OptionalMatch($"({Aliases.Contract})-[:SIGNED_WITH]->({Aliases.Vendor}:Vendor)");
+            .Match($"({Al.Contract}:Contract)")
+            .OptionalMatch($"({Al.Contract})-[:SIGNED_WITH]->({Al.Vendor}:Employee)");
 
         filter.Apply(builder);
 
-        builder.Return($" DISTINCT {Aliases.Contract}, {Aliases.Vendor}");
+        builder.Return($" DISTINCT {Al.Contract}, {Al.Vendor}");
 
         var (query, parameters) = builder.Build();
 
         return await ExecuteReadListAsync(
             query,
             parameters,
-            Contract.FromRecord
+            ContractExtended.FromRecord
         );
     }
 
     public async Task<IEnumerable<ContractSummary>> FindByFilterWithSummary(ContractFilter filter)
     {
         var builder = new QueryBuilder()
-            //.Match($"({Aliases.Contract}:Contract)")
-            //.OptionalMatch($"({Aliases.Contract})-[:SIGNED_WITH]->({Aliases.Vendor}:Vendor)");
-            .Match($"({Aliases.Contract}:Contract)-[:SIGNED_WITH]->({Aliases.Vendor}:Vendor)");
-            //.OptionalMatch($"({Aliases.Contract})<-[r:SUPPLIED_UNDER]-({Aliases.Item}:Item)");
+            //.Match($"({Al.ContractExtended}:ContractExtended)")
+            //.OptionalMatch($"({Al.ContractExtended})-[:SIGNED_WITH]->({Al.Employee}:Employee)");
+            .Match($"({Al.Contract}:Contract)-[:SIGNED_WITH]->({Al.Vendor}:Employee)");
+            //.OptionalMatch($"({Al.ContractExtended})<-[r:SUPPLIED_UNDER]-({Al.Item}:Item)");
 
         filter.Apply(builder);
 
-        builder.Return($"DISTINCT {Aliases.Contract}, {Aliases.Vendor}");
+        builder.Return($" DISTINCT {Al.Contract}, {Al.Vendor}");
 
         var (query, parameters) = builder.Build();
 
@@ -95,17 +95,17 @@ public class ContractRepository(IDriver driver) : NeocoreRepository(driver), ICo
         );
     }
 
-    public async Task Update(int id, Contract contract)
+    public async Task Update(int id, ContractExtended contract)
     {
         _ = await FindById(id) ?? throw new InvalidOperationException(@$"
-            Cannot update non-existent {nameof(Contract)} (id: {id})
+            Cannot update non-existent {nameof(ContractExtended)} (id: {id})
         ");
 
         await Delete(id);
         await Add(contract);
     }
 
-    public async Task Add(Contract contract)
+    public async Task Add(ContractExtended contract)
     {
         int id = await NewId();
 
@@ -125,7 +125,7 @@ public class ContractRepository(IDriver driver) : NeocoreRepository(driver), ICo
         {
             query.Append(@"
                 WITH c
-                MATCH (v:Vendor {id: $vendorId})
+                MATCH (v:Employee {id: $vendorId})
                 MERGE (c)-[:SIGNED_WITH]->(v)
             ");
             parameters["vendorId"] = vendorId;

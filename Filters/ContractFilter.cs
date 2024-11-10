@@ -2,7 +2,7 @@
 
 namespace Neocore.Filters;
 
-public class ContractFilter
+public class ContractFilter : IFilter
 {
     public int? VendorId { get; set; }
     public DateOnly? DeliveryDateFrom { get; set; }
@@ -11,14 +11,14 @@ public class ContractFilter
     {
         if (VendorId.HasValue)
         {
-            builder.With($"{Aliases.Contract}, {Aliases.Vendor}")
-                .Where($"{Aliases.Vendor}.id = $vendorId", "vendorId", VendorId.Value);
+            builder.With($"{Al.Contract}, {Al.Vendor}")
+                .Where($"{Al.Vendor}.id = $vendorId", "vendorId", VendorId.Value);
         }
 
         if (DeliveryDateFrom.HasValue)
         {
-            builder.With($"{Aliases.Contract}, {Aliases.Vendor}")
-                .Where($"{Aliases.Contract}.deliveryDate >= $deliveryDateFrom", "deliveryDateFrom", DeliveryDateFrom.Value);
+            builder.With($"{Al.Contract}, {Al.Vendor}")
+                .Where($"{Al.Contract}.deliveryDate >= $deliveryDateFrom", "deliveryDateFrom", DeliveryDateFrom.Value);
         }
     }
 }

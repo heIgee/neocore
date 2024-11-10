@@ -2,7 +2,7 @@
 
 namespace Neocore.Filters;
 
-public class ItemFilter
+public class ItemFilter : IFilter
 {
     public int? VendorId { get; set; }
     public float? MaxPrice { get; set; }
@@ -10,11 +10,27 @@ public class ItemFilter
 
     public void Apply(QueryBuilder builder)
     {
+        if (MaxPrice.HasValue)
+        {
+            builder.With($"{Al.Item}, {Al.Vendor}")
+                .Where($"{Al.Item}.price <= $maxPrice", "maxPrice", MaxPrice.Value);
+        }
+        if (VendorId.HasValue)
+        {
+            builder.With($"{Al.Item}, {Al.Vendor}")
+                .Where($"{Al.Vendor}.id = $vendorId", "vendorId", VendorId.Value);
+        }
+        else if (HasMultilpleVendors.HasValue && HasMultilpleVendors.Value)
+        {
+            builder.With($"{Al.Item}, COUNT(DISTINCT {Al.Vendor}) as cdv")
+                .Where("cdv > 1");
+        }
+
         //builder.Where("($maxPrice IS NULL OR i.price <= $maxPrice)", "maxPrice", MaxPrice);
 
-        //if (VendorId.HasValue)
+        //if (ItemType.HasValue)
         //{
-        //    builder.Where("($vendorId IS NULL OR (v.id = $vendorId AND v IS NOT NULL))", "vendorId", VendorId);
+        //    builder.Where("($vendorId IS NULL OR (v.id = $vendorId AND v IS NOT NULL))", "vendorId", ItemType);
         //}
 
         //if (HasMultilpleVendors.HasValue)
@@ -25,22 +41,5 @@ public class ItemFilter
         //            "($hasMultipleVendors = false AND vendorCount <= 1))", 
         //            "hasMultipleVendors", HasMultilpleVendors);
         //}
-
-
-        if (MaxPrice.HasValue)
-        {
-            builder.With($"{Aliases.Item}, {Aliases.Vendor}")
-                .Where($"{Aliases.Item}.price <= $maxPrice", "maxPrice", MaxPrice.Value);
-        }
-        if (VendorId.HasValue)
-        {
-            builder.With($"{Aliases.Item}, {Aliases.Vendor}")
-                .Where($"{Aliases.Vendor}.id = $vendorId", "vendorId", VendorId.Value);
-        }
-        else if (HasMultilpleVendors.HasValue && HasMultilpleVendors.Value)
-        {
-            builder.With($"{Aliases.Item}, COUNT(DISTINCT {Aliases.Vendor}) as cdv")
-                .Where("cdv > 1");
-        }
     }
 }

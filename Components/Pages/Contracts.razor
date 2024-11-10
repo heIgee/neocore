@@ -33,14 +33,14 @@
 <QuickGrid class="nc-grid" Items="ContractList.AsQueryable()" Pagination="paginationState">
     <TemplateColumn class="nc-narrow" 
         Title="Id"
-        SortBy="GridSort<Contract>.ByAscending(c => c.Id)"
+        SortBy="GridSort<ContractExtended>.ByAscending(c => c.Id)"
     >
         <a href="contract/@context.Id">@context.Id</a>
     </TemplateColumn>
     <PropertyColumn Property="c => c.DeliveryDate" Sortable="true" />
     <TemplateColumn 
         Title="Signed with" 
-        SortBy="GridSort<Contract>.ByAscending(c => c.Vendor == null ? null : c.Vendor.Name)"
+        SortBy="GridSort<ContractExtended>.ByAscending(c => c.Vendor == null ? null : c.Vendor.Name)"
     >
         <a href="vendor/@context.Vendor?.Id">@context.Vendor?.Name</a>
     </TemplateColumn>
@@ -50,7 +50,7 @@
 @code {
     private PaginationState paginationState = new() { ItemsPerPage = 10 };
 
-    private List<Contract> ContractList { get; set; } = new();
+    private List<ContractExtended> ContractList { get; set; } = new();
 
     public List<Vendor> Vendors { get; set; } = new();
 
@@ -93,7 +93,7 @@
 
     public void UpdateQuery(int vendorId)
     {
-        // if (VendorId != vendorId)
+        // if (ItemType != vendorId)
         // {
             NavigationManager.NavigateTo(
                 NavigationManager.GetUriWithQueryParameters(

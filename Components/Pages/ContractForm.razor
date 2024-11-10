@@ -71,7 +71,7 @@
     [Parameter]
     public int? Id { get; set; }
 
-    public Contract? Contract { get; set; }
+    public ContractExtended? Contract { get; set; }
 
     public List<Vendor> AllVendors { get; set; } = new();
     public List<Item> AllItems { get; set; } = new();
@@ -128,7 +128,7 @@
         Contract.Vendor = vendor;
     }
 
-    private async Task ChangeItem(ItemWithQuantity itemWithQuantity, int itemId)
+    private async Task ChangeItem(DeliveredItem itemWithQuantity, int itemId)
     {
         var item = await ItemRepository.FindById(itemId);
 
@@ -155,7 +155,7 @@
         }
     }
 
-    private void RemoveItem(ItemWithQuantity itemWithQuantity)
+    private void RemoveItem(DeliveredItem itemWithQuantity)
     {
         Contract?.Items?.Remove(itemWithQuantity);
     }

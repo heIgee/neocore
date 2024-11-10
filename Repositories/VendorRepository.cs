@@ -12,9 +12,9 @@ public class VendorRepository(IDriver driver) : NeocoreRepository(driver), IVend
     public async Task<Vendor?> FindById(int id)
     {
         var (query, parameters) = new QueryBuilder()
-            .Match($"({Aliases.Vendor}:Vendor)")
-            .Where($"{Aliases.Vendor}.id = $id", "id", id)
-            .Return($"{Aliases.Vendor}")
+            .Match($"({Al.Vendor}:Vendor)")
+            .Where($"{Al.Vendor}.id = $id", "id", id)
+            .Return($"{Al.Vendor}")
             .Build();
 
         return await ExecuteReadSingleAsync(
@@ -27,8 +27,8 @@ public class VendorRepository(IDriver driver) : NeocoreRepository(driver), IVend
     public async Task<IEnumerable<Vendor>> FindAll()
     {
         var (query, _) = new QueryBuilder()
-            .Match($"({Aliases.Vendor}:Vendor)")
-            .Return($"{Aliases.Vendor}")
+            .Match($"({Al.Vendor}:Vendor)")
+            .Return($"{Al.Vendor}")
             .Build();
 
         return await ExecuteReadListAsync(
@@ -41,12 +41,12 @@ public class VendorRepository(IDriver driver) : NeocoreRepository(driver), IVend
     public async Task<IEnumerable<VendorSummary>> FindAllWithSummary()
     {
         var (query, _) = new QueryBuilder()
-            .Match($"({Aliases.Vendor}:Vendor)")
-            .OptionalMatch($"({Aliases.Vendor})<-[:SIGNED_WITH]-({Aliases.Contract}:Contract)")
-            .OptionalMatch($"({Aliases.Contract})<-[:SUPPLIED_UNDER]-({Aliases.Item}:Item)")
-            .Return(@$"{Aliases.Vendor}, 
-                COUNT(DISTINCT {Aliases.Contract}) AS {Aliases.CountDistinctContracts},
-                COUNT(DISTINCT {Aliases.Item}) AS {Aliases.CountDistinctItems}")
+            .Match($"({Al.Vendor}:Vendor)")
+            .OptionalMatch($"({Al.Vendor})<-[:SIGNED_WITH]-({Al.Contract}:Contract)")
+            .OptionalMatch($"({Al.Contract})<-[:SUPPLIED_UNDER]-({Al.Item}:Item)")
+            .Return(@$"{Al.Vendor}, 
+                COUNT(DISTINCT {Al.Contract}) AS {Al.CountDistinctContracts},
+                COUNT(DISTINCT {Al.Item}) AS {Al.CountDistinctItems}")
             .Build();
 
         return await ExecuteReadListAsync(
@@ -56,18 +56,18 @@ public class VendorRepository(IDriver driver) : NeocoreRepository(driver), IVend
         );
     }
 
-    //public async Task<IEnumerable<Vendor>> FindByItemType(string productType)
+    //public async Task<IEnumerable<Employee>> FindByItemType(string productType)
     //{
     //    const string query = @$"
-    //        MATCH ({Aliases.Vendor}:Vendor)
-    //        <-[:SIGNED_WITH]-(Contract)
+    //        MATCH ({Al.Employee}:Employee)
+    //        <-[:SIGNED_WITH]-(ContractExtended)
     //        <-[:SUPPLIED_UNDER]-(p:Item {{type: $productType}}) 
-    //        RETURN DISTINCT {Aliases.Vendor}
+    //        RETURN DISTINCT {Al.Employee}
     //    ";
     //    return await ExecuteReadListAsync(
     //        query,
     //        new { productType },
-    //        Vendor.FromRecord
+    //        Employee.FromRecord
     //    );
     //}
         

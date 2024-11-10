@@ -12,9 +12,9 @@ public class ItemRepository(IDriver driver) : NeocoreRepository(driver), IItemRe
     public async Task<Item?> FindById(int id)
     {
         var (query, parameters) = new QueryBuilder()
-            .Match($"({Aliases.Item}:Item)")
-            .Where($"{Aliases.Item}.id = $id", "id", id)
-            .Return($"{Aliases.Item}")
+            .Match($"({Al.Item}:Item)")
+            .Where($"{Al.Item}.id = $id", "id", id)
+            .Return($"{Al.Item}")
             .Build();
 
         return await ExecuteReadSingleAsync(
@@ -27,8 +27,8 @@ public class ItemRepository(IDriver driver) : NeocoreRepository(driver), IItemRe
     public async Task<IEnumerable<Item>> FindAll()
     {
         var (query, _) = new QueryBuilder()
-            .Match($"({Aliases.Item}:Item)")
-            .Return($"{Aliases.Item}")
+            .Match($"({Al.Item}:Item)")
+            .Return($"{Al.Item}")
             .Build();
 
         return await ExecuteReadListAsync(
@@ -41,9 +41,9 @@ public class ItemRepository(IDriver driver) : NeocoreRepository(driver), IItemRe
     public async Task<IEnumerable<Item>> FindByVendor(int vendorId)
     {
         var (query, parameters) = new QueryBuilder()
-            .Match($"({Aliases.Vendor}:Vendor)<-[:SIGNED_WITH]-(Contract)<-[:SUPPLIED_UNDER]-({Aliases.Item}:Item)")
-            .Where($"({Aliases.Vendor}).id = $vendorId", "vendorId", vendorId)
-            .Return($"DISTINCT {Aliases.Item}")
+            .Match($"({Al.Vendor}:Employee)<-[:SIGNED_WITH]-(ContractExtended)<-[:SUPPLIED_UNDER]-({Al.Item}:Item)")
+            .Where($"({Al.Vendor}).id = $vendorId", "vendorId", vendorId)
+            .Return($"DISTINCT {Al.Item}")
             .Build();
 
         return await ExecuteReadListAsync(
@@ -56,15 +56,15 @@ public class ItemRepository(IDriver driver) : NeocoreRepository(driver), IItemRe
     public async Task<IEnumerable<Item>> FindByFilter(ItemFilter filter)
     {
         var builder = new QueryBuilder()
-            .Match($"({Aliases.Item}:Item)")
-            .OptionalMatch($"({Aliases.Vendor}:Vendor)<-[:SIGNED_WITH]-(Contract)<-[:SUPPLIED_UNDER]-({Aliases.Item})");
-        //.Match($"({Aliases.Item}:Item)-[:SUPPLIED_UNDER]->(Contract)-[:SIGNED_WITH]->({Aliases.Vendor}:Vendor)"); // wwww
+            .Match($"({Al.Item}:Item)")
+            .OptionalMatch($"({Al.Vendor}:Employee)<-[:SIGNED_WITH]-(ContractExtended)<-[:SUPPLIED_UNDER]-({Al.Item})");
+        //.Match($"({Al.Item}:Item)-[:SUPPLIED_UNDER]->(ContractExtended)-[:SIGNED_WITH]->({Al.Employee}:Employee)"); // wwww
 
         filter.Apply(builder);
 
-        //builder.OptionalMatch($"({Aliases.Vendor}:Vendor)<-[:SIGNED_WITH]-(Contract)<-[:SUPPLIED_UNDER]-({Aliases.Item})");
+        //builder.OptionalMatch($"({Al.Employee}:Employee)<-[:SIGNED_WITH]-(ContractExtended)<-[:SUPPLIED_UNDER]-({Al.Item})");
 
-        builder.Return($"DISTINCT {Aliases.Item}");
+        builder.Return($"DISTINCT {Al.Item}");
 
         var (query, parameters) = builder.Build();
 

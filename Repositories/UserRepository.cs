@@ -11,8 +11,8 @@ public class UserRepository(IDriver driver) : NeocoreRepository(driver), IUserRe
     public async Task<IEnumerable<User>> FindAll()
     {
         var (query, _) = new QueryBuilder()
-            .Match($"({Aliases.User}:User)")
-            .Return($"{Aliases.User}")
+            .Match($"({Al.User}:User)")
+            .Return($"{Al.User}")
             .Build();
 
         return await ExecuteReadListAsync(
@@ -25,9 +25,9 @@ public class UserRepository(IDriver driver) : NeocoreRepository(driver), IUserRe
     public async Task<User?> FindById(int id)
     {
         var (query, parameters) = new QueryBuilder()
-            .Match($"({Aliases.User}:User)")
-            .Where($"{Aliases.User}.id = $id", "id", id)
-            .Return($"{Aliases.User}")
+            .Match($"({Al.User}:User)")
+            .Where($"{Al.User}.id = $id", "id", id)
+            .Return($"{Al.User}")
             .Build();
 
         return await ExecuteReadSingleAsync(
@@ -40,9 +40,9 @@ public class UserRepository(IDriver driver) : NeocoreRepository(driver), IUserRe
     public async Task<User?> FindByUsername(string username)
     {
         var (query, parameters) = new QueryBuilder()
-            .Match($"({Aliases.User}:User)")
-            .Where($"{Aliases.User}.name = $username", "username", username)
-            .Return($"{Aliases.User}")
+            .Match($"({Al.User}:User)")
+            .Where($"{Al.User}.name = $username", "username", username)
+            .Return($"{Al.User}")
             .Build();
 
         return await ExecuteReadSingleAsync(
@@ -55,10 +55,10 @@ public class UserRepository(IDriver driver) : NeocoreRepository(driver), IUserRe
     public async Task<User?> ValidateUser(string username, string password)
     {
         var (query, parameters) = new QueryBuilder()
-            .Match($"({Aliases.User}:User)")
-            .Where($"{Aliases.User}.name = $username", "username", username)
-            .Where($"{Aliases.User}.password = $password", "password", password)
-            .Return($"{Aliases.User}")
+            .Match($"({Al.User}:User)")
+            .Where($"{Al.User}.name = $username", "username", username)
+            .Where($"{Al.User}.password = $password", "password", password)
+            .Return($"{Al.User}")
             .Build();
 
         return await ExecuteReadSingleAsync(
@@ -75,10 +75,10 @@ public class UserRepository(IDriver driver) : NeocoreRepository(driver), IUserRe
         ");
 
         var query = new StringBuilder(@$" 
-            MATCH ({Aliases.User}:User {{id: $id}})
-            SET {Aliases.User}.name = $name, 
-                {Aliases.User}.role = $role, 
-                {Aliases.User}.password = $password
+            MATCH ({Al.User}:User {{id: $id}})
+            SET {Al.User}.name = $name, 
+                {Al.User}.role = $role, 
+                {Al.User}.password = $password
         "); 
 
         object parameters = new
@@ -102,7 +102,7 @@ public class UserRepository(IDriver driver) : NeocoreRepository(driver), IUserRe
         int id = await NewId();
 
         var query = new StringBuilder(@$" 
-            CREATE ({Aliases.User}:User {{id: $id, name: $name, role: $role, password: $password}})
+            CREATE ({Al.User}:User {{id: $id, name: $name, role: $role, password: $password}})
         ");
 
        object parameters = new

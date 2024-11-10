@@ -12,7 +12,7 @@ public class User : INeocoreNode<User>
 
     public static User FromRecord(IRecord record)
     {
-        var node = record[Aliases.User].As<INode>();
+        var node = record[Al.User].As<INode>();
         return node is null ? new() : FromNode(node); 
     }
 

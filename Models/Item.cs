@@ -14,7 +14,7 @@ public class Item : INeocoreNode<Item>
 
     public static Item FromRecord(IRecord record)
     {
-        var node = record[Aliases.Item].As<INode>();
+        var node = record[Al.Item].As<INode>();
         return node is null ? new() : FromNode(node);
     }
 

@@ -11,14 +11,26 @@ public class Vendor : INeocoreNode<Vendor>
 
     public static Vendor FromRecord(IRecord record)
     {
-        var node = record[Aliases.Vendor].As<INode>();
+        var node = record[Al.Vendor].As<INode>();
         return node is null ? new() : FromNode(node);  
     }
 
-    public static Vendor FromNode(INode node) => new()
+    public static Vendor FromNode(INode node)
     {
-        Id = node.Properties["id"].As<int>(),
-        Name = node.Properties["name"].As<string>(),
-        ContactInfo = node.Properties["contactInfo"].As<string>()
-    };
+        Console.WriteLine("Labels: " + string.Join(", ", node.Labels));
+        
+        Console.WriteLine("Properties:");
+        foreach (var property in node.Properties)
+        {
+            Console.WriteLine($"{property.Key}: {property.Value}");
+        }
+
+
+        return new()
+        {
+            Id = node.Properties["id"].As<int>(),
+            Name = node.Properties["name"].As<string>(),
+            ContactInfo = node.Properties["contactInfo"].As<string>()
+        };
+    }
 }

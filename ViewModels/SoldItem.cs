@@ -1,13 +1,15 @@
 ﻿using Neo4j.Driver;
+using Neocore.Models;
 
-namespace Neocore.Models;
+namespace Neocore.ViewModels;
 
-public class ItemWithQuantity
+public class SoldItem
 {
     public Item? Item { get; set; }
     public int? Quantity { get; set; }
+    public string? WarrantyTerms { get; set; }
 
-    public static List<ItemWithQuantity>? ListFromDictionaries(IList<IDictionary<string, object>>? itemListNode)
+    public static List<SoldItem>? ListFromDictionaries(IList<IDictionary<string, object>>? itemListNode)
     {
         if (itemListNode is null || !itemListNode.Any())
             return null;
@@ -16,10 +18,12 @@ public class ItemWithQuantity
         {
             var itemNode = itemDict["item"]?.As<INode>();
             var quantity = itemDict["quantity"]?.As<int>();
-            return new ItemWithQuantity
+            var warrantyTerms = itemDict["warrantyTerms"].As<string>();
+            return new SoldItem
             {
                 Item = itemNode is null ? null : Item.FromNode(itemNode),
-                Quantity = quantity
+                Quantity = quantity,
+                WarrantyTerms = warrantyTerms
             };
         }).ToList();
     }

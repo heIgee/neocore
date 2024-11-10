@@ -1,50 +1,50 @@
 ﻿using Neo4j.Driver;
 using Neocore.Common;
+using Neocore.ViewModels;
 
 namespace Neocore.Models;
 
-// TODO ContractExtended
-public class Contract : INeocoreNode<Contract>
+public class ContractExtended : INeocoreNode<ContractExtended>
 {
     public int? Id { get; set; }
     public LocalDate? DeliveryDate { get; set; }
 
     public Vendor? Vendor { get; set; }
-    public List<ItemWithQuantity>? Items { get; set; }
+    public List<DeliveredItem>? Items { get; set; }
 
-    public static Contract FromRecord(IRecord record)
+    public static ContractExtended FromRecord(IRecord record)
     {
-        var node = record[Aliases.Contract].As<INode>();
+        var node = record[Al.Contract].As<INode>();
 
         if (node is null) 
             return new();
 
         var contract = FromNode(node);
 
-        if (record.TryGetValue(Aliases.Vendor, out var vendorValue))
+        if (record.TryGetValue(Al.Vendor, out var vendorValue))
         {
             var vendorNode = vendorValue?.As<INode>();
             contract.Vendor = vendorNode is null ? null : Vendor.FromNode(vendorNode);
         }
 
-        if (record.TryGetValue(Aliases.ItemWithQuantityList, out var itemListValue))
+        if (record.TryGetValue(Al.ItemWithQuantityList, out var itemListValue))
         {
             var itemListNode = itemListValue?.As<IList<IDictionary<string, object>>>();
-            contract.Items = itemListNode is null ? null : ItemWithQuantity.ListFromDictionaries(itemListNode);
+            contract.Items = itemListNode is null ? null : DeliveredItem.ListFromDictionaries(itemListNode);
         }
 
         return contract;
     }
 
-    public static Contract FromNode(INode node) => new()
+    public static ContractExtended FromNode(INode node) => new()
     {
         Id = node.Properties["id"].As<int>(),
         DeliveryDate = node.Properties["deliveryDate"].As<LocalDate>()
     };
 
-    //public static Contract FromNode(INode node)
+    //public static ContractExtended FromNode(INode node)
     //{
-    //    var contract = new Contract();
+    //    var contract = new ContractExtended();
     //    var props = node.Properties;
 
     //    contract.Id = props.TryGetValue("id", out var id)
