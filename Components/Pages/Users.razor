@@ -1,0 +1,39 @@
+﻿@page "/users"
+
+@inherits NeocoreComponent
+
+@inject IUserRepository UserRepository
+
+<RoleGuard MinimumRole="UserRole.Owner">
+    <h3 class="mt-2">
+        Users
+        <a href="/user" class="btn btn-sm ms-2 py-1 btn-success">+ New</a>
+    </h3>
+
+    <QuickGrid class="nc-grid" Items="UserList.AsQueryable()" Pagination="paginationState">
+        <TemplateColumn class="nc-narrow" Title="Id"
+                        SortBy="GridSort<User>.ByAscending(i => i.Id)">
+            <a href="user/@context.Id">@context.Id</a>
+        </TemplateColumn>
+        <PropertyColumn Property="u => u.Name" Sortable="true" />
+        <PropertyColumn Property="s => s.Role" Sortable="true" />
+        <PropertyColumn Property="s => s.Password" Sortable="true" />
+        <Paginator State="paginationState" />
+    </QuickGrid>
+</RoleGuard>
+
+@code {
+    private PaginationState paginationState = new() { ItemsPerPage = 10 };
+
+    public List<User> UserList { get; set; } = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!IsPrerendering)
+        {
+            UserList = [.. await UserRepository.FindAll()];
+        }
+
+        await base.OnInitializedAsync();
+    }
+}

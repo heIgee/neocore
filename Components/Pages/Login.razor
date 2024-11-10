@@ -3,6 +3,7 @@
 @inherits NeocoreComponent
 
 @inject IAuthService AuthService
+@inject IUserRepository UserRepository
 @inject NavigationManager Nav
 
 <div class="container mt-5">
@@ -12,11 +13,17 @@
                 <div class="card-body">
                     <h3 class="card-title text-center mb-4">Sign In</h3>
 
-                    @if (_error)
+                    @if (!string.IsNullOrEmpty(ErrorMessage))
                     {
                         <div class="alert alert-danger">
-                            Invalid username or password
+                            @ErrorMessage
                         </div>
+                        @if (ShowFetchPasswordButton)
+                        {
+                            <button class="btn btn-secondary w-100 mb-2" @onclick="FillPassword">
+                                Fetch password
+                            </button>
+                        }
                     }
 
                     <div class="mb-3">
@@ -40,7 +47,6 @@
     </div>
 </div>
 
-
 @code {
     [Parameter]
     [SupplyParameterFromQuery(Name = "returnUrl")]
@@ -48,7 +54,10 @@
 
     private string Username = "";
     private string Password = "";
-    private bool _error;
+    private string? ErrorMessage;
+
+    private string? FetchedPassword;
+    private bool ShowFetchPasswordButton;
 
     protected override void OnInitialized()
     {
@@ -60,22 +69,34 @@
 
     private void Redirect() 
     {
-        Console.WriteLine("Redirect FROM login");
-        Console.WriteLine(ReturnUrl);
         Nav.NavigateTo(ReturnUrl ?? "/");
     }
 
     private async Task SignIn()
     {
-        _error = false;
+        ErrorMessage = null;
+        ShowFetchPasswordButton = false;
 
-        if (await AuthService.SignIn(Username, Password))
+        var user = await UserRepository.FindByUsername(Username);
+
+        if (user is null)
         {
-            Redirect();
+            ErrorMessage = "User not found";
+        }
+        else if (!await AuthService.SignIn(Username, Password))
+        {
+            ErrorMessage = "Invalid password";
+            ShowFetchPasswordButton = true;
+            FetchedPassword = user.Password;
         }
         else
         {
-            _error = true;
+            Redirect();
         }
+    }
+
+    private void FillPassword() 
+    {
+        Password = FetchedPassword ?? Password;
     }
 }

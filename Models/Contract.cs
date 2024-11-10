@@ -3,6 +3,7 @@ using Neocore.Common;
 
 namespace Neocore.Models;
 
+// TODO ContractExtended
 public class Contract : INeocoreNode<Contract>
 {
     public int? Id { get; set; }
@@ -29,7 +30,7 @@ public class Contract : INeocoreNode<Contract>
         if (record.TryGetValue(Aliases.ItemWithQuantityList, out var itemListValue))
         {
             var itemListNode = itemListValue?.As<IList<IDictionary<string, object>>>();
-            contract.Items = itemListNode is null ? null : ItemWithQuantity.ListFromList(itemListNode);
+            contract.Items = itemListNode is null ? null : ItemWithQuantity.ListFromDictionaries(itemListNode);
         }
 
         return contract;

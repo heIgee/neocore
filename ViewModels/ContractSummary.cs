@@ -3,6 +3,7 @@ using Neocore.Models;
 
 namespace Neocore.ViewModels;
 
+// TODO: deprecated?
 public class ContractSummary : INeocoreViewModel<ContractSummary>
 {
     public Contract? Contract { get; set; } = new();

@@ -1,4 +1,6 @@
-﻿<div class="top-row ps-3 navbar navbar-dark">
+﻿@inject IAuthService AuthService
+
+<div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
         <a class="navbar-brand" href="">Neocore</a>
     </div>
@@ -14,7 +16,7 @@
             </NavLink>
         </div>
 
-        <div class="nav-item px-3">
+    @*     <div class="nav-item px-3">
             <NavLink class="nav-link" href="counter">
                 <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Counter
             </NavLink>
@@ -24,7 +26,16 @@
             <NavLink class="nav-link" href="weather">
                 <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Weather
             </NavLink>
-        </div>
+        </div> *@
+         
+        @if (AuthService.CurrentUser?.Role >= UserRole.Owner)
+        {
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="users">
+                    <span class="bi bi-people-nav-menu" aria-hidden="true"></span> Users
+                </NavLink>
+            </div>
+        }
 
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="vendors">
@@ -43,7 +54,6 @@
                 <span class="bi bi-box-seam-nav-menu" aria-hidden="true"></span> Items
             </NavLink>
         </div>
-
     </nav>
 </div>
 

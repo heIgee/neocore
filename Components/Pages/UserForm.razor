@@ -1,0 +1,99 @@
+﻿@page "/user/{Id:int?}"
+
+@inherits NeocoreComponent
+
+@inject IUserRepository UserRepository
+@inject NavigationManager Nav
+
+<RoleGuard MinimumRole="UserRole.Owner">
+    <div class="col col-md-6 me-auto">
+        @if (Id is null)
+        {
+            <h3>Adding new User</h3>
+        }
+        else
+        {
+            <h3>Updating User #@Id</h3>
+        }
+
+        <div class="mb-2">
+            <button class="btn text-white btn-info py-1" @onclick="Confirm">Confirm</button>
+            @if (Id is not null)
+            {
+                <button class="btn text-white btn-danger py-1 ms-1" @onclick="Delete">Delete</button>
+            }
+        </div>
+
+        @if (User is not null)
+        {
+            <label class="form-label" for="name">Name:</label>
+            <input class="form-control mb-2" type="text" id="name" @bind-value="@User.Name" />
+
+            <label class="form-label" for="role">Role:</label>
+            <select class="form-select mb-2" id="role" @bind="@User.Role">
+                @foreach (var role in Enum.GetValues<UserRole>())
+                {
+                    <option value="@role">@role</option>
+                }
+            </select>
+
+            <label class="form-label" for="password">Password:</label>
+            <input class="form-control mb-2" type="text" id="password" @bind-value="@User.Password" />
+        }
+    </div>
+</RoleGuard>
+
+@code {
+    [Parameter]
+    public int? Id { get; set; }
+
+    public User? User { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (!IsPrerendering)
+        {
+            if (Id.HasValue)
+            {
+                User = await UserRepository.FindById(Id.Value);
+
+                if (User is null || !User.Id.HasValue)
+                {
+                    Nav.NavigateTo("/user", forceLoad: true);
+                }
+            }
+            else
+            {
+                User = new();
+            }
+        }
+
+        await base.OnParametersSetAsync();
+    }
+
+    private async Task Confirm()
+    {
+        if (User is null)
+            return;
+
+        if (Id.HasValue)
+        {
+            await UserRepository.Update(Id.Value, User);
+        }
+        else
+        {
+            await UserRepository.Add(User);
+        }
+
+        Nav.NavigateTo("/users");
+    }
+
+    private async Task Delete()
+    {
+        if (User is null || !Id.HasValue)
+            return;
+
+        await UserRepository.Delete(Id.Value);
+        Nav.NavigateTo("/users");
+    }
+}

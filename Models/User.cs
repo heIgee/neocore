@@ -8,6 +8,7 @@ public class User : INeocoreNode<User>
     public int? Id { get; set; }
     public string? Name { get; set; }
     public UserRole? Role { get; set; }
+    public string? Password { get; set; }
 
     public static User FromRecord(IRecord record)
     {
@@ -22,6 +23,7 @@ public class User : INeocoreNode<User>
         Role = Enum.Parse<UserRole>(
             node.Properties["role"].As<string>(), 
             ignoreCase: true
-        )
+        ),
+        Password = node.Properties["password"].As<string>(),
     };
 }

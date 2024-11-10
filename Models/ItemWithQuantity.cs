@@ -7,7 +7,7 @@ public class ItemWithQuantity
     public Item? Item { get; set; }
     public int? Quantity { get; set; }
 
-    public static List<ItemWithQuantity>? ListFromList(IList<IDictionary<string, object>>? itemListNode)
+    public static List<ItemWithQuantity>? ListFromDictionaries(IList<IDictionary<string, object>>? itemListNode)
     {
         if (itemListNode is null || !itemListNode.Any())
             return null;
