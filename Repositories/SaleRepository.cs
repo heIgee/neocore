@@ -54,13 +54,13 @@ public class SaleRepository(IDriver driver) : NeocoreRepository(driver)
         builder.Return($"{Al.Sale}, {Al.Employee}, {Al.Customer}, {Al.SoldItemList}");
     
         var (query, parameters) = builder.Build();
+        Console.WriteLine(query);
 
         return await ExecuteReadListAsync(
             query,
             parameters,
             SaleExtended.FromRecord
         );
-
     }
 
     public async Task Update(int id, Sale sale)

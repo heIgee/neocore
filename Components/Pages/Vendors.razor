@@ -18,11 +18,12 @@
     </TemplateColumn>
 
     <PropertyColumn Property="s => s.Vendor.Name" Sortable="true" />
-    <PropertyColumn Property="s => s.Vendor.ContactInfo" />
-    <TemplateColumn Title="TotalContracts" Sortable="true" SortBy="GridSort<VendorSummary>.ByDescending(s => s.TotalContracts)">
+    <PropertyColumn Property="s => s.Vendor.ContactInfo" /> 
+        @* TODO proper titles *@
+    <TemplateColumn Title="Total contracts" Sortable="true" SortBy="GridSort<VendorSummary>.ByDescending(s => s.TotalContracts)">
         <a href="/contracts?vendor=@context.Vendor?.Id">@context.TotalContracts</a>
     </TemplateColumn>
-    <TemplateColumn Title="TotalItems" Sortable="true" SortBy="GridSort<VendorSummary>.ByDescending(s => s.TotalItems)">
+    <TemplateColumn Title="Total items" Sortable="true" SortBy="GridSort<VendorSummary>.ByDescending(s => s.TotalItems)">
         <a href="/items?vendor=@context.Vendor?.Id">@context.TotalItems</a>
     </TemplateColumn>
     <Paginator State="paginationState"/>

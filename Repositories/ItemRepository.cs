@@ -41,7 +41,7 @@ public class ItemRepository(IDriver driver) : NeocoreRepository(driver), IItemRe
     public async Task<IEnumerable<Item>> FindByVendor(int vendorId)
     {
         var (query, parameters) = new QueryBuilder()
-            .Match($"({Al.Vendor}:Employee)<-[:SIGNED_WITH]-(ContractExtended)<-[:SUPPLIED_UNDER]-({Al.Item}:Item)")
+            .Match($"({Al.Vendor}:Vendor)<-[:SIGNED_WITH]-(ContractExtended)<-[:SUPPLIED_UNDER]-({Al.Item}:Item)")
             .Where($"({Al.Vendor}).id = $vendorId", "vendorId", vendorId)
             .Return($"DISTINCT {Al.Item}")
             .Build();
@@ -57,7 +57,7 @@ public class ItemRepository(IDriver driver) : NeocoreRepository(driver), IItemRe
     {
         var builder = new QueryBuilder()
             .Match($"({Al.Item}:Item)")
-            .OptionalMatch($"({Al.Vendor}:Employee)<-[:SIGNED_WITH]-(ContractExtended)<-[:SUPPLIED_UNDER]-({Al.Item})");
+            .OptionalMatch($"({Al.Vendor}:Vendor)<-[:SIGNED_WITH]-(ContractExtended)<-[:SUPPLIED_UNDER]-({Al.Item})");
         //.Match($"({Al.Item}:Item)-[:SUPPLIED_UNDER]->(ContractExtended)-[:SIGNED_WITH]->({Al.Employee}:Employee)"); // wwww
 
         filter.Apply(builder);

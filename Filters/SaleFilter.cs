@@ -6,12 +6,12 @@ public class SaleFilter: IFilter
 {
     public DateOnly? DateFrom { get; set; }
     public DateOnly? DateTo { get; set; }
-    public string? ItemType { get; set; }
     public int? EmployeeId { get; set; }
+    public int? CustomerId { get; set; }
+    public string? ItemType { get; set; }
 
     public void Apply(QueryBuilder builder)
     {
-        // Always need to keep track of all nodes and relationships we're filtering on
         builder.With($"{Al.Sale}, {Al.Employee}, {Al.Customer}, {Al.SoldItemList}");
         
         if (DateFrom.HasValue)
@@ -28,24 +28,15 @@ public class SaleFilter: IFilter
         {
             builder.Where($"{Al.Employee}.id = $employeeId", "employeeId", EmployeeId.Value);
         }
+            
+        if (CustomerId.HasValue)
+        {
+            builder.Where($"{Al.Customer}.id = $customerId", "customerId", CustomerId.Value);
+        }
         
         if (!string.IsNullOrEmpty(ItemType))
         {
-            // Need to match the type of items in the sold items list
-            builder.Where($"ANY(item IN {Al.SoldItemList} WHERE item.type = $itemType)", "itemType", ItemType);
+            builder.Where($"ANY(soldItem IN {Al.SoldItemList} WHERE toLower(soldItem.item.type) CONTAINS toLower($itemType))", "itemType", ItemType);
         }
     }
-
-
-    //if (VendorId.HasValue)
-    //{
-    //    builder.With($"{Al.Contract}, {Al.Vendor}")
-    //        .Where($"{Al.Vendor}.id = $vendorId", "vendorId", VendorId.Value);
-    //}
-
-    //if (DeliveryDateFrom.HasValue)
-    //{
-    //    builder.With($"{Al.Contract}, {Al.Vendor}")
-    //        .Where($"{Al.Contract}.deliveryDate >= $deliveryDateFrom", "deliveryDateFrom", DeliveryDateFrom.Value);
-    //}
 }

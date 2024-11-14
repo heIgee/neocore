@@ -4,6 +4,7 @@
 
 @inject SaleRepository SaleRepository
 @inject EmployeeRepository EmployeeRepository
+@inject CustomerRepository CustomerRepository
 @inject NavigationManager Nav
 
 <div class="row">
@@ -14,15 +15,35 @@
             Entities="EmployeeList"
             EntityId="@(v => v.Id)"
             EntityName="@(v => v.FullName)"
-            OnEntityFilter="UpdateQuery"
+            OnEntityFilter="UpdateQueryEmployee"
             Label="Sold by employee:" 
         />
 
-        <label for="itemType">Includes items of type:</label>
-        <input class="mt-2 form-control" id="itemType" type="text"
-               @bind="ItemType"
-               @bind:event="oninput"
-               @onchange="() => UpdateQuery()" />
+        <FilterComponent 
+            TEntity="Customer"
+            SelectedId="CustomerId"
+            Entities="CustomerList"
+            EntityId="@(v => v.Id)"
+            EntityName="@(v => v.FullName)"
+            OnEntityFilter="UpdateQueryCustomer"
+            Label="Requested by customer:" 
+        />
+
+        <label for="type">By type:</label>
+        <div class="mt-2 form-control">
+            <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="typeFilter" id="showAll" value="null" checked="@(IsBuild == null)" @onchange="() => UpdateQueryIsBuild(null)">
+                <label class="form-check-label" for="showAll">All</label>
+            </div>
+            <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="typeFilter" id="buildsOnly" value="true" checked="@(IsBuild == true)" @onchange="() => UpdateQueryIsBuild(true)">
+                <label class="form-check-label" for="buildsOnly">Builds only</label>
+            </div>
+            <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="typeFilter" id="nonBuildsOnly" value="false" checked="@(IsBuild == false)" @onchange="() => UpdateQueryIsBuild(false)">
+                <label class="form-check-label" for="nonBuildsOnly">Non-builds only</label>
+            </div>
+        </div>
     </div>
 
     <div class="col col-md-6">
@@ -33,8 +54,14 @@
                @onchange="() => UpdateQuery()" />
 
         <label for="dateTo">Date to:</label>
-        <input class="mt-2 form-control" id="dateTo" type="date"
+        <input class="my-2 form-control" id="dateTo" type="date"
                @bind="DateTo"
+               @bind:event="oninput"
+               @onchange="() => UpdateQuery()" />
+
+        <label for="itemType">Includes items of type:</label>
+        <input class="mt-2 form-control" id="itemType" type="text"
+               @bind="ItemType"
                @bind:event="oninput"
                @onchange="() => UpdateQuery()" />
     </div>
@@ -46,16 +73,14 @@
 </h3>
 
 <QuickGrid class="nc-grid" Items="SaleList.AsQueryable()" Pagination="paginationState">
-    <TemplateColumn class="nc-narrow"
-                    Title="Id"
-                    SortBy="GridSort<SaleExtended>.ByAscending(c => c.Sale == null ? null : c.Sale.Id)">
+    <TemplateColumn class="nc-narrow" Title="Id" SortBy="GridSort<SaleExtended>.ByAscending(c => c.Sale == null ? null : c.Sale.Id)">
         <a href="sale/@context.Sale?.Id">@context.Sale?.Id</a>
     </TemplateColumn>
     <TemplateColumn Title="Date" SortBy="GridSort<SaleExtended>.ByDescending(c => c.Sale == null ? null : c.Sale.Date)">
-        $@context.Sale?.Date
+        @context.Sale?.Date
     </TemplateColumn>
     <TemplateColumn Title="Total" SortBy="GridSort<SaleExtended>.ByDescending(c => c.Sale == null ? null : c.Sale.Total)">
-        $@context.Sale?.Total
+        <div>$@context.Sale?.Total</div>
     </TemplateColumn>
     <TemplateColumn Title="Items">
         @{
@@ -65,23 +90,32 @@
             @((MarkupString)(itemLinks == null ? "" : string.Join(", ", itemLinks)))
         }
     </TemplateColumn>
-    <TemplateColumn Title="Sold by"
-                    SortBy="GridSort<SaleExtended>.ByAscending(c => c.Employee == null ? null : c.Employee.FullName)">
+    <TemplateColumn Title="Sold by" SortBy="GridSort<SaleExtended>.ByAscending(c => c.Employee == null ? null : c.Employee.FullName)">
         <a href="/employee/@context.Employee?.Id">@context.Employee?.FullName</a>
     </TemplateColumn>
-    <TemplateColumn Title="Ordered by"
-                    SortBy="GridSort<SaleExtended>.ByAscending(c => c.Customer == null ? null : c.Customer.FullName)">
+    <TemplateColumn Title="Ordered by" SortBy="GridSort<SaleExtended>.ByAscending(c => c.Customer == null ? null : c.Customer.FullName)">
         <a href="/customer/@context.Customer?.Id">@context.Customer?.FullName</a>
+    </TemplateColumn>
+    <TemplateColumn Title="Is build" SortBy="GridSort<SaleExtended>.ByDescending(c => c.Sale == null ? null : c.Sale.IsBuild)">
+        @(context.Sale?.IsBuild ?? false ? "Yes" : "No")
     </TemplateColumn>
     <Paginator State="paginationState" />
 </QuickGrid>
+
+<div class="fw-bold mt-3 border-top pt-2">
+    <div>Total revenue: $@TotalRevenue</div>
+    <div>Total items quantity: @TotalItemsQuantity</div>
+</div>
 
 @code {
     private PaginationState paginationState = new() { ItemsPerPage = 10 };
 
     private List<SaleExtended> SaleList { get; set; } = new();
-
     private List<Employee> EmployeeList { get; set; } = new();
+    private List<Customer> CustomerList { get; set; } = new();
+
+    private float? TotalRevenue { get; set; }
+    private int? TotalItemsQuantity { get; set; }
 
     [Parameter]
     [SupplyParameterFromQuery(Name = "from")]
@@ -99,6 +133,15 @@
     [SupplyParameterFromQuery(Name = "employee")]
     public int EmployeeId { get; set; }
 
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "customer")]
+    public int CustomerId { get; set; }
+
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "isBuild")]
+    // used "client-side"
+    public bool? IsBuild { get; set; }
+
 
     protected override async Task OnParametersSetAsync()
     {
@@ -113,7 +156,11 @@
             if (EmployeeList.Count <= 0)
                 EmployeeList = [.. await EmployeeRepository.FindAll()];
 
+            if (CustomerList.Count <= 0)
+                CustomerList = [.. await CustomerRepository.FindAll()];
+
             await UpdateSaleList();
+            FilterByIsBuild();
         }
 
         await base.OnParametersSetAsync();
@@ -126,14 +173,40 @@
                 DateFrom = DateFrom,
                 DateTo = DateTo,
                 ItemType = !string.IsNullOrWhiteSpace(ItemType) ? ItemType : null,
-                EmployeeId = EmployeeId > 0 ? EmployeeId : null
+                EmployeeId = EmployeeId > 0 ? EmployeeId : null,
+                CustomerId = CustomerId > 0 ? CustomerId : null,
             }
         )];
+
+        CalculateTotals();
     }
 
-    public void UpdateQuery(int employeeId = -1)
+    private void CalculateTotals()
+    {
+        TotalRevenue = SaleList.Sum(s => s.Sale == null ? 0 : s.Sale.Total ?? 0);
+        TotalItemsQuantity = SaleList.Sum(s => s.Items == null ? 0 : s.Items.Sum(i => i.Quantity));
+    }
+
+    private void UpdateQueryEmployee(int employeeId)
+    {
+        UpdateQuery(employeeId: employeeId);
+    }
+
+    private void UpdateQueryCustomer(int customerId) 
+    {
+        UpdateQuery(customerId: customerId);
+    }
+
+    private void UpdateQueryIsBuild(bool? isBuild)
+    {
+        IsBuild = isBuild;
+        UpdateQuery();
+    }
+
+    public void UpdateQuery(int employeeId = -1, int customerId = -1)
     {
         employeeId = employeeId < 0 ? EmployeeId : employeeId;
+        customerId = customerId < 0 ? CustomerId : customerId;
         Nav.NavigateTo(
             Nav.GetUriWithQueryParameters(
                 new Dictionary<string, object?>()
@@ -142,8 +215,16 @@
                         { "to", DateTo != DateOnly.MinValue ? DateTo : null },
                         { "itemType", !string.IsNullOrWhiteSpace(ItemType) ? ItemType : null },
                         { "employee", employeeId > 0 ? employeeId : null },
+                        { "customer", customerId > 0 ? customerId: null },
+                        { "isBuild", IsBuild },
                     }
             )
         );
+    }
+
+    private void FilterByIsBuild()
+    {
+        SaleList = !IsBuild.HasValue ? SaleList : SaleList.Where(s => s.Sale?.IsBuild == IsBuild).ToList();
+        CalculateTotals();
     }
 }

@@ -16,7 +16,7 @@ public class ContractRepository(IDriver driver) : NeocoreRepository(driver), ICo
             .Match($"({Al.Contract}:Contract)")
             .Where($"{Al.Contract}.id = $id", "id", id)
             .OptionalMatch($"({Al.Item}:Item)-[su:SUPPLIED_UNDER]->({Al.Contract})")
-            .OptionalMatch($"({Al.Contract})-[:SIGNED_WITH]->({Al.Vendor}:Employee)")
+            .OptionalMatch($"({Al.Contract})-[:SIGNED_WITH]->({Al.Vendor}:Vendor)")
             .Return($"{Al.Contract}, {Al.Vendor}, " +
                 $"COLLECT({{item: {Al.Item}, quantity: su.quantity}}) as {Al.ItemWithQuantityList}")
             .Build();
@@ -46,7 +46,7 @@ public class ContractRepository(IDriver driver) : NeocoreRepository(driver), ICo
     {
         var builder = new QueryBuilder()
             .Match($"({Al.Contract}:Contract)")
-            .OptionalMatch($"({Al.Contract})-[:SIGNED_WITH]->({Al.Vendor}:Employee)");
+            .OptionalMatch($"({Al.Contract})-[:SIGNED_WITH]->({Al.Vendor}:Vendor)");
 
         filter.Apply(builder);
 
@@ -65,8 +65,8 @@ public class ContractRepository(IDriver driver) : NeocoreRepository(driver), ICo
     {
         var builder = new QueryBuilder()
             //.Match($"({Al.ContractExtended}:ContractExtended)")
-            //.OptionalMatch($"({Al.ContractExtended})-[:SIGNED_WITH]->({Al.Employee}:Employee)");
-            .Match($"({Al.Contract}:Contract)-[:SIGNED_WITH]->({Al.Vendor}:Employee)");
+            //.OptionalMatch($"({Al.ContractExtended})-[:SIGNED_WITH]->()");
+            .Match($"({Al.Contract}:Contract)-[:SIGNED_WITH]->({Al.Vendor}:Vendor)");
             //.OptionalMatch($"({Al.ContractExtended})<-[r:SUPPLIED_UNDER]-({Al.Item}:Item)");
 
         filter.Apply(builder);
@@ -125,7 +125,7 @@ public class ContractRepository(IDriver driver) : NeocoreRepository(driver), ICo
         {
             query.Append(@"
                 WITH c
-                MATCH (v:Employee {id: $vendorId})
+                MATCH (v:Vendor {id: $vendorId})
                 MERGE (c)-[:SIGNED_WITH]->(v)
             ");
             parameters["vendorId"] = vendorId;
