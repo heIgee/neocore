@@ -3,8 +3,21 @@
 @inherits NeocoreComponent
 
 @inject CustomerRepository CustomerRepository
+@inject VendorRepository VendorRepository
+@inject NavigationManager Nav
 
 <RoleGuard MinimumRole="UserRole.Editor">
+    <div class="col col-md-6 me-auto">
+        <FilterComponent TEntity="Vendor"
+            SelectedId="VendorId"
+            Entities="VendorList"
+            EntityId="@(v => v.Id)"
+            EntityName="@(v => v.Name)"
+            OnEntityFilter="UpdateQuery"
+            Label="Bought items delivered by:" 
+        />
+    </div>
+
     <h3 class="mt-2">
         Customers
         <a href="/customer" class="btn btn-sm ms-2 py-1 btn-success">+ New</a>
@@ -25,15 +38,42 @@
 @code {
     private PaginationState paginationState = new() { ItemsPerPage = 10 };
 
-    public List<Customer> CustomerList { get; set; } = new();
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "vendor")]
+    public int VendorId { get; set; }
 
-    protected override async Task OnInitializedAsync()
+    public List<Customer> CustomerList { get; set; } = new();
+    public List<Vendor> VendorList { get; set; } = new();
+
+    protected override async Task OnParametersSetAsync()
     {
         if (!IsPrerendering)
         {
-            CustomerList = [.. await CustomerRepository.FindAll()];
+            if (VendorList.Count <= 0)
+                VendorList = [.. await VendorRepository.FindAll()];
+
+            await UpdateCustomers();
         }
 
-        await base.OnInitializedAsync();
+        await base.OnParametersSetAsync();
+    }
+
+    private async Task UpdateCustomers()
+    {
+        CustomerList = VendorId > 0 
+            ? [.. await CustomerRepository.FindByVendor(VendorId)]
+            : [.. await CustomerRepository.FindAll()];
+    }
+
+    public void UpdateQuery(int vendorId)
+    {
+        Nav.NavigateTo(
+            Nav.GetUriWithQueryParameters(
+                new Dictionary<string, object?>()
+                    {
+                        { "vendor", vendorId > 0 ? vendorId : null },
+                    }
+            )
+        );
     }
 }

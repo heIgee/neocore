@@ -35,6 +35,27 @@ public class CustomerRepository(IDriver driver) : NeocoreRepository(driver)
         );
     }
 
+    public async Task<IEnumerable<Customer>> FindByVendor(int vendorId)
+    {
+        var (query, parameters) = new QueryBuilder()
+            .Match($"({Al.Customer}:Customer)")
+            .OptionalMatch($"({Al.Customer})<-[:ORDERED_BY]-({Al.Sale})")
+            .OptionalMatch($"({Al.Sale})-[:INCLUDES]->({Al.Item})")
+            .OptionalMatch($"({Al.Item})-[:SUPPLIED_UNDER]->({Al.Contract})")
+            .OptionalMatch($"({Al.Contract})-[:SIGNED_WITH]->({Al.Vendor})")
+            .With($"{Al.Customer}, {Al.Vendor}")
+            .Where($"{Al.Vendor}.id = $vendorId", "vendorId", vendorId)
+            .Return($"DISTINCT {Al.Customer}")
+            .Build();
+
+        Console.WriteLine(query);
+
+        return await ExecuteReadListAsync(
+            query,
+            parameters,
+            Customer.FromRecord
+        );
+    }
     
     public async Task Update(int id, Customer customer)
     {
