@@ -32,6 +32,7 @@ public class Program
             .AddScoped<SaleRepository>()
             .AddScoped<EmployeeRepository>()
             .AddScoped<CustomerRepository>()
+            .AddScoped<RepairRepository>()
             .AddScoped<IAuthService, AuthService>()
             .AddBlazoredLocalStorage()
         ;

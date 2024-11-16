@@ -16,26 +16,11 @@
             </NavLink>
         </div>
 
-    @*     <div class="nav-item px-3">
-            <NavLink class="nav-link" href="counter">
-                <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Counter
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="users">
+                <span class="bi bi-people-nav-menu" aria-hidden="true"></span> Users
             </NavLink>
         </div>
-
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="weather">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Weather
-            </NavLink>
-        </div> *@
-         
-        @if (AuthService.CurrentUser?.Role >= UserRole.Owner)
-        {
-            <div class="nav-item px-3">
-                <NavLink class="nav-link" href="users">
-                    <span class="bi bi-people-nav-menu" aria-hidden="true"></span> Users
-                </NavLink>
-            </div>
-        }
 
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="vendors">
@@ -58,6 +43,11 @@
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="sales">
                 <span class="bi bi-cash-coin-nav-menu" aria-hidden="true"></span> Sales
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="repairs">
+                <span class="bi bi-wrench-adjustable-circle-nav-menu" aria-hidden="true"></span> Repairs
             </NavLink>
         </div>
     </nav>

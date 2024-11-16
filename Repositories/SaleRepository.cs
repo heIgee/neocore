@@ -135,19 +135,15 @@ public class SaleRepository(IDriver driver) : NeocoreRepository(driver)
 
     public async Task Add(SaleExtended saleX, int? oldId = null)
     {
+        if (saleX.Sale is null) return;
+
         int id = oldId ?? await NewId();
 
         var query = new StringBuilder(@"
             CREATE (s:Sale {id: $id, total: $total, date: $date, isBuild: $isBuild})
         ");
 
-        var parameters = new Dictionary<string, object>()
-        {
-            ["id"] = id,
-            ["total"] = saleX.Sale?.Total ?? 0.0f,
-            ["date"] = saleX.Sale?.Date ?? new LocalDate(2024, 01, 01),
-            ["isBuild"] = saleX.Sale?.IsBuild ?? false,
-        };
+        var parameters = GetParams(id, saleX.Sale);
 
         int? employeeId = saleX.Employee?.Id;
 
@@ -230,10 +226,11 @@ public class SaleRepository(IDriver driver) : NeocoreRepository(driver)
         ) + 1;
     }
 
-    private static object GetParams(int id, Sale sale) => new
+    private static Dictionary<string, object> GetParams(int id, Sale sale) => new()
     {
-        id,
-        total = sale.Total ?? 0.0f,
-        date = sale.Date ?? new LocalDate(2024, 01, 01),
+        ["id"] = id,
+        ["total"] = sale.Total ?? 0.0f,
+        ["date"] = sale.Date ?? new LocalDate(2024, 01, 01),
+        ["isBuild"] = sale.IsBuild ?? false,
     };
 }

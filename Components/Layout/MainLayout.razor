@@ -27,7 +27,7 @@ else
                     You are:
                     <strong>@AuthService.CurrentUser?.Name (@AuthService.CurrentUser?.Role)</strong>
                 </span>
-                <button class="btn btn-link text-danger" @onclick="SignOut">sign out</button>
+                <a class="text-danger" @onclick="SignOut">sign out</a>
                 <a href="https://github.com/heIgee" target="_blank">by helgee</a>
                 <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">docs</a>
             </div>

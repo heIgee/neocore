@@ -1,0 +1,121 @@
+﻿@page "/repairs"
+
+@inherits NeocoreComponent
+
+@inject RepairRepository RepairRepository
+@inject EmployeeRepository EmployeeRepository
+@inject CustomerRepository CustomerRepository
+@inject ItemRepository ItemRepository
+@inject NavigationManager Nav
+
+<div class="col col-md-6 me-auto">
+    <label for="type">By status:</label>
+    <div class="mt-2 form-control">
+        <div class="form-check form-check-inline mb-0">
+            <input class="form-check-input" type="radio" name="typeFilter" id="showAll" value="null" checked="@(Status == null)" @onchange="() => UpdateQueryStatus(null)">
+            <label class="form-check-label" for="showAll">Show all</label>
+        </div>  
+        <div class="form-check form-check-inline mb-0">
+            <input class="form-check-input" type="radio" name="typeFilter" id="showAll" value="HandedOver" checked="@(Status == RepairStatus.HandedOver)" @onchange="() => UpdateQueryStatus(RepairStatus.HandedOver)">
+            <label class="form-check-label" for="showAll">Handed over</label>
+        </div>
+        <div class="form-check form-check-inline mb-0">
+            <input class="form-check-input" type="radio" name="typeFilter" id="buildsOnly" value="InProgress" checked="@(Status == RepairStatus.InProgress)" @onchange="() => UpdateQueryStatus(RepairStatus.InProgress)">
+            <label class="form-check-label" for="buildsOnly">In progress</label>
+        </div>
+        <div class="form-check form-check-inline mb-0">
+            <input class="form-check-input" type="radio" name="typeFilter" id="nonBuildsOnly" value="Returned" checked="@(Status == RepairStatus.Returned)" @onchange="() => UpdateQueryStatus(RepairStatus.Returned)">
+            <label class="form-check-label" for="nonBuildsOnly">Returned</label>
+        </div>
+    </div>
+</div>
+
+<h3 class="mt-2">
+    Repairs
+    <a href="/repair" class="btn btn-sm ms-2 py-1 btn-success">+ New</a>
+</h3>
+
+<QuickGrid class="nc-grid" Items="RepairList.AsQueryable()" Pagination="paginationState">
+    <TemplateColumn class="nc-narrow" Title="Id" SortBy="GridSort<RepairExtended>.ByAscending(r => r.Repair == null ? null : r.Repair.Id)">
+        <a href="repair/@context.Repair?.Id">@context.Repair?.Id</a>
+    </TemplateColumn>    
+    <TemplateColumn Title="Status" SortBy="GridSort<RepairExtended>.ByAscending(r => r.Repair == null ? null : r.Repair.Status)">
+        @context.Repair?.Status
+    </TemplateColumn>
+    <TemplateColumn Title="Is warranty" SortBy="GridSort<RepairExtended>.ByDescending(r => r.Repair == null ? null : r.Repair.IsWarranty)">
+        @(context.Repair?.IsWarranty ?? false ? "Yes" : "No")
+    </TemplateColumn>
+    <TemplateColumn Title="Cause" SortBy="GridSort<RepairExtended>.ByAscending(r => r.Repair == null ? null : r.Repair.Cause)">
+        @context.Repair?.Cause
+    </TemplateColumn>
+    <TemplateColumn Title="Total" SortBy="GridSort<RepairExtended>.ByDescending(r => r.Repair == null ? null : r.Repair.Price)">
+        <div>$@context.Repair?.Price</div>
+    </TemplateColumn>
+    <TemplateColumn Title="Handed date" SortBy="GridSort<RepairExtended>.ByDescending(r => r.Repair == null ? null : r.Repair.HandedDate)">
+        @context.Repair?.HandedDate
+    </TemplateColumn>    
+    <TemplateColumn Title="Returned date" SortBy="GridSort<RepairExtended>.ByDescending(r => r.Repair == null ? null : r.Repair.ReturnedDate)">
+        @context.Repair?.ReturnedDate
+    </TemplateColumn>
+    <TemplateColumn Title="Handled by" SortBy="GridSort<RepairExtended>.ByAscending(c => c.Employee == null ? null : c.Employee.FullName)">
+        <a href="/employee/@context.Employee?.Id">@context.Employee?.FullName</a>
+    </TemplateColumn>
+    <TemplateColumn Title="Requested by" SortBy="GridSort<RepairExtended>.ByAscending(c => c.Customer == null ? null : c.Customer.FullName)">
+        <a href="/customer/@context.Customer?.Id">@context.Customer?.FullName</a>
+    </TemplateColumn>    
+    <TemplateColumn Title="Item" SortBy="GridSort<RepairExtended>.ByAscending(c => c.Item == null ? null : c.Item.Name)">
+        <a href="/item/@context.Item?.Id">@context.Item?.Name</a>
+    </TemplateColumn>
+    <Paginator State="paginationState" />
+</QuickGrid>
+
+@code {
+    private PaginationState paginationState = new() { ItemsPerPage = 10 };
+
+    private List<RepairExtended> RepairList { get; set; } = new();
+
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "status")]
+    public int? StatusValue { get; set; }
+
+    public RepairStatus? Status => (RepairStatus?)StatusValue;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (!IsPrerendering)
+        {
+            await UpdateRepairList();
+            FilterByIsBuild();
+        }
+
+        await base.OnParametersSetAsync();
+    }
+
+    private async Task UpdateRepairList()
+    {
+        RepairList = [.. await RepairRepository.FindAllExtended()];
+    }
+
+    private void UpdateQueryStatus(RepairStatus? status)
+    {
+        StatusValue = (int?)status;
+        UpdateQuery();
+    }
+
+    public void UpdateQuery()
+    {
+        Nav.NavigateTo(
+            Nav.GetUriWithQueryParameters(
+                new Dictionary<string, object?>()
+                    {
+                        { "status", StatusValue },
+                    }
+            )
+        );
+    }
+
+    private void FilterByIsBuild()
+    {
+        RepairList = !Status.HasValue ? RepairList : RepairList.Where(r => r.Repair?.Status == Status).ToList();
+    }
+}

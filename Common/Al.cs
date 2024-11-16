@@ -13,4 +13,5 @@ public class Al
     public const string Sale = "s";
     public const string Customer = "cu";
     public const string Employee = "e";
+    public const string Repair = "r";
 }
