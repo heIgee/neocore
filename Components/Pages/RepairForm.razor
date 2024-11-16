@@ -1,0 +1,262 @@
+﻿@page "/repair/{Id:int?}"
+
+@inherits NeocoreComponent
+
+@inject RepairRepository RepairRepository
+@inject ItemRepository ItemRepository
+@inject CustomerRepository CustomerRepository
+@inject EmployeeRepository EmployeeRepository
+@inject NavigationManager Nav
+
+<RoleGuard MinimumRole="UserRole.Editor">
+    <div class="col col-md-6 me-auto">
+        @if (Id is null)
+        {
+            <h3>Adding new Repair</h3>
+        }
+        else
+        {
+            <h3>Updating Repair #@Id</h3>
+        }
+
+        <div class="mb-2">
+            <button class="btn text-white btn-info py-1" @onclick="Confirm">Confirm</button>
+            @if (Id is not null)
+            {
+                <button class="btn text-white btn-danger py-1 ms-1" @onclick="Delete">Delete</button>
+            }
+        </div>
+
+        <div class="d-flex align-items-center mb-2">
+            <label class="form-check-label me-2" for="name">Is warranty:</label>
+            <input class="form-check-input mb-auto" type="checkbox" id="name" checked="@(RepairX?.Repair?.IsWarranty)" @bind-value="@IsWarrantyBinder" />
+        </div>
+
+        <label for="type">By status:</label>
+        <div class="my-2 form-control">
+            <div class="form-check form-check-inline mb-0">
+                <input class="form-check-input" type="radio" name="typeFilter" id="handedOver" value="HandedOver" checked="@(RepairX?.Repair?.Status == RepairStatus.HandedOver)" @onchange="() => ChangeStatus(RepairStatus.HandedOver)">
+                <label class="form-check-label" for="handedOver">Handed over</label>
+            </div>
+            <div class="form-check form-check-inline mb-0">
+                <input class="form-check-input" type="radio" name="typeFilter" id="inProgress" value="InProgress" checked="@(RepairX?.Repair?.Status == RepairStatus.InProgress)" @onchange="() => ChangeStatus(RepairStatus.InProgress)">
+                <label class="form-check-label" for="inProgress">In progress</label>
+            </div>
+            <div class="form-check form-check-inline mb-0">
+                <input class="form-check-input" type="radio" name="typeFilter" id="returned" value="Returned" checked="@(RepairX?.Repair?.Status == RepairStatus.Returned)" @onchange="() => ChangeStatus(RepairStatus.Returned)">
+                <label class="form-check-label" for="returned">Returned</label>
+            </div>
+        </div>
+
+
+        <label class="form-label" for="cause">Cause:</label>
+        <input class="form-control mb-2" type="text" id="cause" @bind-value="CauseBinder" />
+
+         <label class="form-label" for="price">Price:</label>
+         <input class="form-control mb-2" type="number" step="0.01" min="0" id="price" @bind-value="PriceBinder" />
+
+        <label class="form-label" for="handedDate">Handed date:</label>
+        <input class="form-control mb-2" type="date" id="handedDate" @bind-value="@HandedDateBinder" />
+
+        <label class="form-label" for="returnedDate">Returned date:</label>
+        <input class="form-control mb-2" type="date" id="returnedDate" @bind-value="@ReturnedDateBinder" disabled="@(RepairX?.Repair?.Status != RepairStatus.Returned)" />
+
+        <FilterComponent TEntity="Employee"
+                         SelectedId="@(RepairX?.Employee is not null && RepairX.Employee.Id.HasValue ? RepairX.Employee.Id.Value : 0)"
+                         Entities="EmployeeList"
+                         EntityId="@(e => e.Id)"
+                         EntityName="@(e => e.FullName)"
+                         OnEntityFilter="ChangeEmployee"
+                         Label="Handled by:"
+                         ZeroLabel="No one" />
+
+        <FilterComponent TEntity="Customer"
+                         SelectedId="@(RepairX?.Customer is not null && RepairX.Customer.Id.HasValue ? RepairX.Customer.Id.Value : 0)"
+                         Entities="CustomerList"
+                         EntityId="@(e => e.Id)"
+                         EntityName="@(e => e.FullName)"
+                         OnEntityFilter="ChangeCustomer"
+                         Label="Requested by:"
+                         ZeroLabel="No one" />
+
+        <FilterComponent TEntity="Item"
+                         SelectedId="@(RepairX?.Item is not null && RepairX.Item.Id.HasValue ? RepairX.Item.Id.Value : 0)"
+                         Entities="ItemList"
+                         EntityId="@(e => e.Id)"
+                         EntityName="@(v => $"[{v.Id}] {v.Name}")"
+                         OnEntityFilter="ChangeItem"
+                         Label="Involves:"
+                         ZeroLabel="---" />
+    </div>
+</RoleGuard>
+
+@code {
+    [Parameter]
+    public int? Id { get; set; }
+
+    public RepairExtended? RepairX { get; set; }
+
+    public List<Item> ItemList { get; set; } = new();
+    public List<Employee> EmployeeList { get; set; } = new();
+    public List<Customer> CustomerList { get; set; } = new();
+
+    private bool? IsWarrantyBinder
+    {
+        get => RepairX?.Repair?.IsWarranty ?? false;
+        set
+        {
+            if (RepairX is not null && RepairX.Repair is not null && value.HasValue)
+            {
+                RepairX.Repair.IsWarranty = value;
+            }
+        }
+    }
+
+    private string? CauseBinder
+    {
+        get => RepairX?.Repair?.Cause;
+        set
+        {
+            if (RepairX is not null && RepairX.Repair is not null && value is not null)
+            {
+                RepairX.Repair.Cause = value;
+            }
+        }
+    }
+
+    private float? PriceBinder
+    {
+        get => RepairX?.Repair?.Price;
+        set
+        {
+            if (RepairX is not null && RepairX.Repair is not null && value is not null)
+            {
+                RepairX.Repair.Price = value;
+            }
+        }
+    }
+
+    private DateOnly? HandedDateBinder
+    {
+        get => RepairX?.Repair?.HandedDate?.ToDateOnly() ?? new(2024, 01, 01);
+        set
+        {
+            if (RepairX is not null && RepairX.Repair is not null && value.HasValue)
+            {
+                RepairX.Repair.HandedDate = new Neo4j.Driver.LocalDate(value.Value);
+            }
+        }
+    }
+
+    private DateOnly? ReturnedDateBinder
+    {
+        get => RepairX?.Repair?.ReturnedDate?.ToDateOnly() ?? new(2024, 01, 01);
+        set
+        {
+            if (RepairX is not null && RepairX.Repair is not null && value.HasValue)
+            {
+                RepairX.Repair.ReturnedDate = new Neo4j.Driver.LocalDate(value.Value);
+            }
+        }
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (!IsPrerendering)
+        {
+            if (Id.HasValue)
+            {
+                RepairX = await RepairRepository.FindExtendedById(Id.Value);
+
+                if (RepairX is null || RepairX.Repair is null || !RepairX.Repair.Id.HasValue)
+                {
+                    Nav.NavigateTo("/repair", forceLoad: true);
+                }
+            }
+            else
+            {
+                RepairX = new() { Repair = new Repair() };
+            }
+
+            Console.WriteLine(RepairX?.ToString());
+
+            if (ItemList.Count <= 0)
+                ItemList = [.. await ItemRepository.FindAll()];
+
+            if (EmployeeList.Count <= 0)
+                EmployeeList = [.. await EmployeeRepository.FindAll()];
+
+            if (CustomerList.Count <= 0)
+                CustomerList = [.. await CustomerRepository.FindAll()];
+        }
+
+        await base.OnParametersSetAsync();
+    }
+
+    private async Task ChangeEmployee(int employeeId)
+    {
+        if (RepairX is null)
+            return;
+
+        var employee = await EmployeeRepository.FindById(employeeId);
+
+        RepairX.Employee = employee;
+    }
+
+    private async Task ChangeCustomer(int customerId)
+    {
+        if (RepairX is null)
+            return;
+
+        var customer = await CustomerRepository.FindById(customerId);
+
+        RepairX.Customer = customer;
+    }
+
+    private async Task ChangeItem(int itemId)
+    {
+        if (RepairX is null)
+            return;
+
+        var item = await ItemRepository.FindById(itemId);
+
+        RepairX.Item = item;
+    }
+
+    private void ChangeStatus(RepairStatus status)
+    {
+        if (RepairX is null || RepairX.Repair is null)
+            return;
+
+        RepairX.Repair.Status = status;
+
+        if (status != RepairStatus.Returned)
+            RepairX.Repair.ReturnedDate = null;
+    }
+
+    private async Task Confirm()
+    {
+        if (RepairX is null)
+            return;
+
+        if (Id.HasValue)
+        {
+            await RepairRepository.Update(Id.Value, RepairX);
+        }
+        else
+        {
+            await RepairRepository.Add(RepairX);
+        }
+
+        Nav.NavigateTo("/repairs");
+    }
+
+    private async Task Delete()
+    {
+        if (RepairX is null || !Id.HasValue)
+            return;
+
+        await RepairRepository.Delete(Id.Value);
+        Nav.NavigateTo("/repairs");
+    }
+}

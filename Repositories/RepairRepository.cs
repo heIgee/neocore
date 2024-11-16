@@ -115,7 +115,7 @@ public class RepairRepository(IDriver driver) : NeocoreRepository(driver)
         int id = oldId ?? await NewId();
 
         var query = new StringBuilder(@$"
-            CREATE ({Al.Repair}:Repair {{id: $id, status: $status, isWarranty: $isWarranty, caused: $cause, 
+            CREATE ({Al.Repair}:Repair {{id: $id, status: $status, isWarranty: $isWarranty, cause: $cause, 
                 price: $price, handedDate: $handedDate, returnedDate: $returnedDate 
             }})
         ");
@@ -197,8 +197,8 @@ public class RepairRepository(IDriver driver) : NeocoreRepository(driver)
     {
         ["id"] = id,
         ["status"] = repair.Status.HasValue
-            ? repair.Status.Value.ToString().ToLower()
-            : RepairStatus.HandedOver.ToString().ToLower(),
+            ? repair.Status.Value.ToString()
+            : RepairStatus.HandedOver.ToString(),
         ["isWarranty"] = repair.IsWarranty ?? false,
         ["cause"] = repair.Cause ?? string.Empty,
         ["price"] = repair.Price ?? 0.0f,
