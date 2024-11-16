@@ -1,0 +1,88 @@
+﻿@page "/customer/{Id:int?}"
+
+@inherits NeocoreComponent
+
+@inject CustomerRepository CustomerRepository
+@inject NavigationManager Nav
+
+<RoleGuard MinimumRole="UserRole.Editor">
+    <div class="col col-md-6 me-auto">
+        @if (Id is null)
+        {
+            <h3>Adding new Customer</h3>
+        }
+        else
+        {
+            <h3>Updating Customer #@Id</h3>
+        }
+
+        <div class="mb-2">
+            <button class="btn text-white btn-info py-1" @onclick="Confirm">Confirm</button>
+            @if (Id is not null)
+            {
+                <button class="btn text-white btn-danger py-1 ms-1" @onclick="Delete">Delete</button>
+            }
+        </div>
+
+        @if (Customer is not null)
+        {
+            <label class="form-label" for="fullName">Full name:</label>
+            <input class="form-control mb-2" type="text" id="fullName" @bind-value="@Customer.FullName" />
+        }
+    </div>
+</RoleGuard>
+
+@code {
+    [Parameter]
+    public int? Id { get; set; }
+
+    public Customer? Customer { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (!IsPrerendering)
+        {
+            if (Id.HasValue)
+            {
+                Customer = await CustomerRepository.FindById(Id.Value);
+
+                if (Customer is null || !Customer.Id.HasValue)
+                {
+                    Nav.NavigateTo("/customer", forceLoad: true);
+                }
+            }
+            else
+            {
+                Customer = new();
+            }
+        }
+
+        await base.OnParametersSetAsync();
+    }
+
+    private async Task Confirm()
+    {
+        if (Customer is null)
+            return;
+
+        if (Id.HasValue)
+        {
+            await CustomerRepository.Update(Id.Value, Customer);
+        }
+        else
+        {
+            await CustomerRepository.Add(Customer);
+        }
+
+        Nav.NavigateTo("/customers");
+    }
+
+    private async Task Delete()
+    {
+        if (Customer is null || !Id.HasValue)
+            return;
+
+        await CustomerRepository.Delete(Id.Value);
+        Nav.NavigateTo("/customers");
+    }
+}
