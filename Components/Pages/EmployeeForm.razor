@@ -1,0 +1,88 @@
+﻿@page "/employee/{Id:int?}"
+
+@inherits NeocoreComponent
+
+@inject EmployeeRepository EmployeeRepository
+@inject NavigationManager Nav
+
+<RoleGuard MinimumRole="UserRole.Editor">
+    <div class="col col-md-6 me-auto">
+        @if (Id is null)
+        {
+            <h3>Adding new Employee</h3>
+        }
+        else
+        {
+            <h3>Updating Employee #@Id</h3>
+        }
+
+        <div class="mb-2">
+            <button class="btn text-white btn-info py-1" @onclick="Confirm">Confirm</button>
+            @if (Id is not null)
+            {
+                <button class="btn text-white btn-danger py-1 ms-1" @onclick="Delete">Delete</button>
+            }
+        </div>
+
+        @if (Employee is not null)
+        {
+            <label class="form-label" for="fullName">Full name:</label>
+            <input class="form-control mb-2" type="text" id="fullName" @bind-value="@Employee.FullName" />
+        }
+    </div>
+</RoleGuard>
+
+@code {
+    [Parameter]
+    public int? Id { get; set; }
+
+    public Employee? Employee { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (!IsPrerendering)
+        {
+            if (Id.HasValue)
+            {
+                Employee = await EmployeeRepository.FindById(Id.Value);
+
+                if (Employee is null || !Employee.Id.HasValue)
+                {
+                    Nav.NavigateTo("/employee", forceLoad: true);
+                }
+            }
+            else
+            {
+                Employee = new();
+            }
+        }
+
+        await base.OnParametersSetAsync();
+    }
+
+    private async Task Confirm()
+    {
+        if (Employee is null)
+            return;
+
+        if (Id.HasValue)
+        {
+            await EmployeeRepository.Update(Id.Value, Employee);
+        }
+        else
+        {
+            await EmployeeRepository.Add(Employee);
+        }
+
+        Nav.NavigateTo("/employees");
+    }
+
+    private async Task Delete()
+    {
+        if (Employee is null || !Id.HasValue)
+            return;
+
+        await EmployeeRepository.Delete(Id.Value);
+        Nav.NavigateTo("/employees");
+    }
+}

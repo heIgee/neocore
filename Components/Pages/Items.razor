@@ -25,12 +25,14 @@
     /> 
 </div>
 
-<label for="multipleVendorsCheck">From multiple vendors: </label>
-<input class="mt-2 form-checkbox" id="multipleVendorsCheck" type="checkbox"
-    @bind="HasMultilpleVendors"
-    @bind:event="oninput" 
-    @onchange="() => { VendorId = 0; UpdateQuery(VendorId); }"
-/> 
+<div class="d-flex align-items-center my-2">
+    <label class="form-check-label me-2" for="multipleVendorsCheck">From multiple vendors: </label>
+    <input class="form-check-input mb-auto" type="checkbox" id="multipleVendorsCheck"
+        @bind="HasMultilpleVendors"
+        @bind:event="oninput" 
+        @onchange="() => { VendorId = 0; UpdateQuery(VendorId); }"
+    />
+</div>
 
 <h3 class="mt-2">
     Items

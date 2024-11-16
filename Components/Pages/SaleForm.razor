@@ -27,62 +27,65 @@
             }
         </div>
 
-        <div class="d-flex align-items-center mb-2">
-            <label class="form-check-label me-2" for="name">Is build:</label>
-            <input class="form-check-input mb-auto" type="checkbox" id="name" checked="@(SaleX?.Sale?.IsBuild)" @bind-value="@IsBuildBinder" />
-        </div>
-
-        <label class="form-label" for="deliveryDate">Date:</label>
-        <input class="form-control mb-2" type="date" id="deliveryDate" @bind-value="@DateBinder" />
-
-        <FilterComponent
-            TEntity="Employee"
-            SelectedId="@(SaleX?.Employee is not null && SaleX.Employee.Id.HasValue ? SaleX.Employee.Id.Value : 0)"
-            Entities="EmployeeList"
-            EntityId="@(e => e.Id)"
-            EntityName="@(e => e.FullName)"
-            OnEntityFilter="ChangeEmployee" 
-            Label="Sold by:"
-            ZeroLabel="No one"
-        />
-
-        <FilterComponent
-            TEntity="Customer"
-            SelectedId="@(SaleX?.Customer is not null && SaleX.Customer.Id.HasValue ? SaleX.Customer.Id.Value : 0)"
-            Entities="CustomerList"
-            EntityId="@(e => e.Id)"
-            EntityName="@(e => e.FullName)"
-            OnEntityFilter="ChangeCustomer" 
-            Label="Ordered by:"
-            ZeroLabel="No one"
-        />
-
-        <h4>Items included:</h4>
-        @if (SaleX?.Items is not null)
+        @if (SaleX is not null && SaleX.Sale is not null)
         {
-            @foreach (var soldItem in SaleX.Items)
+            <div class="d-flex align-items-center mb-2">
+                <label class="form-check-label me-2" for="name">Is build:</label>
+                <input class="form-check-input mb-auto" type="checkbox" id="name" checked="@(SaleX.Sale.IsBuild)" @bind-value="@SaleX.Sale.IsBuild" />
+            </div>
+
+            <label class="form-label" for="deliveryDate">Date:</label>
+            <input class="form-control mb-2" type="date" id="deliveryDate" @bind-value="@DateBinder" />
+
+            <FilterComponent
+                TEntity="Employee"
+                SelectedId="@(SaleX?.Employee is not null && SaleX.Employee.Id.HasValue ? SaleX.Employee.Id.Value : 0)"
+                Entities="EmployeeList"
+                EntityId="@(e => e.Id)"
+                EntityName="@(e => e.FullName)"
+                OnEntityFilter="ChangeEmployee" 
+                Label="Sold by:"
+                ZeroLabel="No one"
+            />
+
+            <FilterComponent
+                TEntity="Customer"
+                SelectedId="@(SaleX?.Customer is not null && SaleX.Customer.Id.HasValue ? SaleX.Customer.Id.Value : 0)"
+                Entities="CustomerList"
+                EntityId="@(e => e.Id)"
+                EntityName="@(e => e.FullName)"
+                OnEntityFilter="ChangeCustomer" 
+                Label="Ordered by:"
+                ZeroLabel="No one"
+            />
+
+            <h4>Items included:</h4>
+            @if (SaleX?.Items is not null)
             {
-                <div class="input-group">
-                    <FilterComponent 
-                        TEntity="Item"
-                        SelectedId="@(soldItem.Item is not null && soldItem.Item.Id.HasValue ? soldItem.Item.Id.Value : 0)"
-                        Entities="ItemList"
-                        EntityId="@(v => v.Id)"
-                        EntityName="@(v => $"[{v.Id}] {v.Name}")"
-                        OnEntityFilter="@((id) => ChangeItem(soldItem, id))"
-                        ZeroLabel="---" 
-                    />
+                @foreach (var soldItem in SaleX.Items)
+                {
+                    <div class="input-group">
+                        <FilterComponent 
+                            TEntity="Item"
+                            SelectedId="@(soldItem.Item is not null && soldItem.Item.Id.HasValue ? soldItem.Item.Id.Value : 0)"
+                            Entities="ItemList"
+                            EntityId="@(v => v.Id)"
+                            EntityName="@(v => $"[{v.Id}] {v.Name}")"
+                            OnEntityFilter="@((id) => ChangeItem(soldItem, id))"
+                            ZeroLabel="---" 
+                        />
 
-                    <input class="form-control mb-2" type="number" id="quantity" @bind-value="@soldItem.Quantity" />
+                        <input class="form-control mb-2" type="number" id="quantity" @bind-value="@soldItem.Quantity" />
 
-                    <input class="form-control mb-2" type="text" id="warrantyTerms" @bind-value="@soldItem.WarrantyTerms" />
+                        <input class="form-control mb-2" type="text" id="warrantyTerms" @bind-value="@soldItem.WarrantyTerms" />
 
-                    <button class="btn btn-sm btn-outline-danger mb-2" @onclick="@(() => RemoveItem(soldItem))">❌</button>
-                </div>
+                        <button class="btn btn-sm btn-outline-danger mb-2" @onclick="@(() => RemoveItem(soldItem))">❌</button>
+                    </div>
+                }
+
             }
-
+            <button class="btn btn-success py-1" @onclick="AddBlankItem">Add</button>
         }
-        <button class="btn btn-success py-1" @onclick="AddBlankItem">Add</button>
     </div>
 </RoleGuard>
 
@@ -104,18 +107,6 @@
             if (SaleX is not null && SaleX.Sale is not null && value.HasValue)
             {
                 SaleX.Sale.Date = new Neo4j.Driver.LocalDate(value.Value);
-            }
-        }
-    }
-
-    private bool? IsBuildBinder 
-    {
-        get => SaleX?.Sale?.IsBuild ?? false;
-        set 
-        {
-            if (SaleX is not null && SaleX.Sale is not null && value.HasValue)
-            {
-                SaleX.Sale.IsBuild = value;
             }
         }
     }

@@ -1,0 +1,39 @@
+﻿@page "/employees"
+
+@inherits NeocoreComponent
+
+@inject EmployeeRepository EmployeeRepository
+
+<RoleGuard MinimumRole="UserRole.Editor">
+    <h3 class="mt-2">
+        Employees
+        <a href="/employee" class="btn btn-sm ms-2 py-1 btn-success">+ New</a>
+    </h3>
+
+    <QuickGrid class="nc-grid" Items="EmployeeList.AsQueryable()" Pagination="paginationState">
+        <TemplateColumn class="nc-narrow" Title="Id"
+                        SortBy="GridSort<Employee>.ByAscending(i => i.Id)">
+            <a href="employee/@context.Id">@context.Id</a>
+        </TemplateColumn>
+        <TemplateColumn Title="Full name" SortBy="GridSort<Employee>.ByAscending(i => i.FullName)">
+            @context.FullName
+        </TemplateColumn>
+        <Paginator State="paginationState" />
+    </QuickGrid>
+</RoleGuard>
+
+@code {
+    private PaginationState paginationState = new() { ItemsPerPage = 10 };
+
+    public List<Employee> EmployeeList { get; set; } = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!IsPrerendering)
+        {
+            EmployeeList = [.. await EmployeeRepository.FindAll()];
+        }
+
+        await base.OnInitializedAsync();
+    }
+}
