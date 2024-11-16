@@ -102,12 +102,12 @@ public class ContractRepository(IDriver driver) : NeocoreRepository(driver), ICo
         ");
 
         await Delete(id);
-        await Add(contract);
+        await Add(contract, id);
     }
 
-    public async Task Add(ContractExtended contract)
+    public async Task Add(ContractExtended contract, int? oldId = null)
     {
-        int id = await NewId();
+        int id = oldId ?? await NewId();
 
         var query = new StringBuilder(@" 
             CREATE (c:Contract {id: $id, deliveryDate: $deliveryDate})

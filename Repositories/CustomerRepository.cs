@@ -19,4 +19,19 @@ public class CustomerRepository(IDriver driver) : NeocoreRepository(driver)
             Customer.FromRecord
         );
     }
+
+    public async Task<Customer?> FindById(int id)
+    {
+        var (query, parameters) = new QueryBuilder()
+            .Match($"({Al.Customer}:Customer)")
+            .Where($"{Al.Customer}.id = $id", "id", id)
+            .Return($"{Al.Customer}")
+            .Build();
+
+        return await ExecuteReadSingleAsync(
+            query,
+            parameters,
+            Customer.FromRecord
+        );
+    }
 }

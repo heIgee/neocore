@@ -1,0 +1,229 @@
+﻿@page "/sale/{Id:int?}"
+
+@inherits NeocoreComponent
+
+@inject SaleRepository SaleRepository
+@inject ItemRepository ItemRepository
+@inject CustomerRepository CustomerRepository
+@inject EmployeeRepository EmployeeRepository
+@inject NavigationManager Nav
+
+<RoleGuard MinimumRole="UserRole.Editor">
+    <div class="col col-md-6 me-auto">
+        @if (Id is null)
+        {
+            <h3>Adding new Sale</h3>
+        }
+        else 
+        {
+            <h3>Updating Sale #@Id</h3>
+        }
+
+        <div class="mb-2">
+            <button class="btn text-white btn-info py-1" @onclick="Confirm">Confirm</button>
+            @if (Id is not null)
+            {
+                <button class="btn text-white btn-danger py-1 ms-1" @onclick="Delete">Delete</button>
+            }
+        </div>
+
+        <div class="d-flex align-items-center mb-2">
+            <label class="form-check-label me-2" for="name">Is build:</label>
+            <input class="form-check-input mb-auto" type="checkbox" id="name" checked="@(SaleX?.Sale?.IsBuild)" @bind-value="@IsBuildBinder" />
+        </div>
+
+        <label class="form-label" for="deliveryDate">Date:</label>
+        <input class="form-control mb-2" type="date" id="deliveryDate" @bind-value="@DateBinder" />
+
+        <FilterComponent
+            TEntity="Employee"
+            SelectedId="@(SaleX?.Employee is not null && SaleX.Employee.Id.HasValue ? SaleX.Employee.Id.Value : 0)"
+            Entities="EmployeeList"
+            EntityId="@(e => e.Id)"
+            EntityName="@(e => e.FullName)"
+            OnEntityFilter="ChangeEmployee" 
+            Label="Sold by:"
+            ZeroLabel="No one"
+        />
+
+        <FilterComponent
+            TEntity="Customer"
+            SelectedId="@(SaleX?.Customer is not null && SaleX.Customer.Id.HasValue ? SaleX.Customer.Id.Value : 0)"
+            Entities="CustomerList"
+            EntityId="@(e => e.Id)"
+            EntityName="@(e => e.FullName)"
+            OnEntityFilter="ChangeCustomer" 
+            Label="Ordered by:"
+            ZeroLabel="No one"
+        />
+
+        <h4>Items included:</h4>
+        @if (SaleX?.Items is not null)
+        {
+            @foreach (var soldItem in SaleX.Items)
+            {
+                <div class="input-group">
+                    <FilterComponent 
+                        TEntity="Item"
+                        SelectedId="@(soldItem.Item is not null && soldItem.Item.Id.HasValue ? soldItem.Item.Id.Value : 0)"
+                        Entities="ItemList"
+                        EntityId="@(v => v.Id)"
+                        EntityName="@(v => $"[{v.Id}] {v.Name}")"
+                        OnEntityFilter="@((id) => ChangeItem(soldItem, id))"
+                        ZeroLabel="---" 
+                    />
+
+                    <input class="form-control mb-2" type="number" id="quantity" @bind-value="@soldItem.Quantity" />
+
+                    <input class="form-control mb-2" type="text" id="warrantyTerms" @bind-value="@soldItem.WarrantyTerms" />
+
+                    <button class="btn btn-sm btn-outline-danger mb-2" @onclick="@(() => RemoveItem(soldItem))">❌</button>
+                </div>
+            }
+
+        }
+        <button class="btn btn-success py-1" @onclick="AddBlankItem">Add</button>
+    </div>
+</RoleGuard>
+
+@code {
+    [Parameter]
+    public int? Id { get; set; }
+
+    public SaleExtended? SaleX { get; set; }
+
+    public List<Item> ItemList { get; set; } = new();
+    public List<Employee> EmployeeList { get; set; } = new();
+    public List<Customer> CustomerList { get; set; } = new();
+
+    private DateOnly? DateBinder
+    {
+        get => SaleX?.Sale?.Date?.ToDateOnly() ?? new(2024, 01, 01);
+        set
+        {
+            if (SaleX is not null && SaleX.Sale is not null && value.HasValue)
+            {
+                SaleX.Sale.Date = new Neo4j.Driver.LocalDate(value.Value);
+            }
+        }
+    }
+
+    private bool? IsBuildBinder 
+    {
+        get => SaleX?.Sale?.IsBuild ?? false;
+        set 
+        {
+            if (SaleX is not null && SaleX.Sale is not null && value.HasValue)
+            {
+                SaleX.Sale.IsBuild = value;
+            }
+        }
+    }
+    
+    protected override async Task OnParametersSetAsync()
+    {
+        if (!IsPrerendering)
+        {
+            if (Id.HasValue)
+            {
+                SaleX = await SaleRepository.FindExtendedById(Id.Value);
+
+                if (SaleX is null || SaleX.Sale is null || !SaleX.Sale.Id.HasValue)
+                {
+                    Nav.NavigateTo("/contract", forceLoad: true);
+                }
+            }
+            else
+            {
+                SaleX = new();
+            }
+
+            if (ItemList.Count <= 0)
+                ItemList = [.. await ItemRepository.FindAll()];
+
+            if (EmployeeList.Count <= 0)
+                EmployeeList = [.. await EmployeeRepository.FindAll()];
+
+            if (CustomerList.Count <= 0)
+                CustomerList = [.. await CustomerRepository.FindAll()];
+        }
+
+        await base.OnParametersSetAsync();
+    }
+
+    private async Task ChangeEmployee(int employeeId)
+    {
+        if (SaleX is null)
+            return;
+
+        var employee = await EmployeeRepository.FindById(employeeId);
+
+        SaleX.Employee = employee;
+    }
+
+    private async Task ChangeCustomer(int customerId)
+    {
+        if (SaleX is null)
+            return;
+
+        var customer = await CustomerRepository.FindById(customerId);
+
+        SaleX.Customer = customer;
+    }
+
+    private async Task ChangeItem(SoldItem soldItem, int itemId)
+    {
+        var item = await ItemRepository.FindById(itemId);
+
+        if (item is null)
+            return;
+
+        soldItem.Item = item;
+    }
+
+    private void AddBlankItem()
+    {
+        if (SaleX is null)
+            return;
+
+        if (SaleX.Items is null)
+        {
+            SaleX.Items = new() { new() };
+        }
+        else
+        {
+            SaleX.Items.Add(new());
+        }
+    }
+
+    private void RemoveItem(SoldItem soldItem)
+    {
+        SaleX?.Items?.Remove(soldItem);
+    }
+
+    private async Task Confirm()
+    {
+        if (SaleX is null)
+            return;
+
+        if (Id.HasValue)
+        {
+            await SaleRepository.Update(Id.Value, SaleX);
+        }
+        else 
+        {
+            await SaleRepository.Add(SaleX);
+        }
+
+        Nav.NavigateTo("/sales");
+    }
+
+    private async Task Delete()
+    {
+        if (SaleX is null || !Id.HasValue)
+            return;
+
+        await SaleRepository.Delete(Id.Value);
+        Nav.NavigateTo("/sales");
+    }
+}

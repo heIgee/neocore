@@ -31,15 +31,15 @@
 
         <label for="type">By type:</label>
         <div class="mt-2 form-control">
-            <div class="form-check form-check-inline">
+            <div class="form-check form-check-inline mb-0">
                 <input class="form-check-input" type="radio" name="typeFilter" id="showAll" value="null" checked="@(IsBuild == null)" @onchange="() => UpdateQueryIsBuild(null)">
                 <label class="form-check-label" for="showAll">All</label>
             </div>
-            <div class="form-check form-check-inline">
+            <div class="form-check form-check-inline mb-0">
                 <input class="form-check-input" type="radio" name="typeFilter" id="buildsOnly" value="true" checked="@(IsBuild == true)" @onchange="() => UpdateQueryIsBuild(true)">
                 <label class="form-check-label" for="buildsOnly">Builds only</label>
             </div>
-            <div class="form-check form-check-inline">
+            <div class="form-check form-check-inline mb-0">
                 <input class="form-check-input" type="radio" name="typeFilter" id="nonBuildsOnly" value="false" checked="@(IsBuild == false)" @onchange="() => UpdateQueryIsBuild(false)">
                 <label class="form-check-label" for="nonBuildsOnly">Non-builds only</label>
             </div>
