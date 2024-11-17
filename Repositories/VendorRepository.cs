@@ -40,24 +40,58 @@ public class VendorRepository(IDriver driver) : NeocoreRepository(driver), IVend
 
     public async Task<IEnumerable<VendorSummary>> FindAllWithSummary()
     {
-        var (query, _) = new QueryBuilder()
+        var builder = new QueryBuilder()
             .Match($"({Al.Vendor}:Vendor)")
             .OptionalMatch($"({Al.Vendor})<-[:SIGNED_WITH]-({Al.Contract}:Contract)")
-            .OptionalMatch($"({Al.Contract})<-[:SUPPLIED_UNDER]-({Al.Item}:Item)")
-            .OptionalMatch($"({Al.Item})<-[:INVOLVES]-({Al.Repair}:Repair)")
-            .Return(@$"{Al.Vendor}, 
-                COUNT(DISTINCT {Al.Contract}) AS {Al.CountDistinctContracts},
-                COUNT(DISTINCT {Al.Item}) AS {Al.CountDistinctItems},
-                COUNT(DISTINCT {Al.Repair}) AS {Al.CountItemsRepaired}")
-            .Build();
+            .OptionalMatch($"({Al.Contract})<-[su:SUPPLIED_UNDER]-(i:Item)")
+            .OptionalMatch($"(i)<-[:INVOLVES]-({Al.Repair}:Repair)");
+
+        var (query, parameters) = builder.Return(@$"
+            {Al.Vendor}, 
+            COUNT(DISTINCT {Al.Contract}) AS {Al.CountDistinctContracts},
+            COUNT(DISTINCT i) AS {Al.CountDistinctItems},
+            SUM(su.quantity) AS {Al.TotalItemsQuantity},
+            COUNT(DISTINCT {Al.Repair}) AS {Al.CountItemsRepaired}")
+        .Build();
+
+        Console.WriteLine(query);
 
         return await ExecuteReadListAsync(
             query,
-            new { },
+            parameters,
             VendorSummary.FromRecord
         );
     }
+
+    public async Task<IEnumerable<VendorSummary>> FindWithSummaryByItem(int itemId)
+    {
+        // First find the specific item
+        var builder = new QueryBuilder()
+            .Match($"({Al.Vendor}:Vendor)")
+            // First find contracts and the specific item we want
+            .OptionalMatch($"({Al.Vendor})<-[:SIGNED_WITH]-({Al.Contract}:Contract)<-[su:SUPPLIED_UNDER]-(i:Item WHERE i.Id = $itemId)")
+            // Then find repairs for that specific item
+            .OptionalMatch($"(i)<-[:INVOLVES]-({Al.Repair}:Repair)")
+            .Where($"i IS NULL OR i.id = $itemId", "itemId", itemId);
         
+        var (query, parameters) = builder.Return(@$"
+            {Al.Vendor}, 
+            COUNT(DISTINCT {Al.Contract}) AS {Al.CountDistinctContracts},
+            COUNT(DISTINCT i) AS {Al.CountDistinctItems},
+            SUM(CASE WHEN su.quantity IS NOT NULL THEN su.quantity ELSE 0 END) AS {Al.TotalItemsQuantity},
+            COUNT(DISTINCT {Al.Repair}) AS {Al.CountItemsRepaired}")
+        .Build();
+    
+        Console.WriteLine(query);
+        return await ExecuteReadListAsync(
+            query,
+            parameters,
+            VendorSummary.FromRecord
+        );
+}
+
+
+
     public async Task Delete(int id)
     {
         const string query = @"

@@ -3,6 +3,21 @@
 @inherits NeocoreComponent
 
 @inject VendorRepository VendorRepository
+@inject ItemRepository ItemRepository
+@inject NavigationManager Nav
+
+<div class="col col-md-6 me-auto">
+    <FilterComponent 
+        TEntity="Item"
+        SelectedId="ItemId"
+        Entities="ItemList"
+        EntityId="@(e => e.Id)"
+        EntityName="@(v => $"[{v.Id}] {v.Name}")"
+        OnEntityFilter="UpdateQueryItem"
+        Label="By delivered item:"
+        ZeroLabel="All" 
+    />
+</div>
 
 <h3 class="mt-2">
     Vendors
@@ -21,11 +36,14 @@
     <TemplateColumn Title="Total contracts" SortBy="GridSort<VendorSummary>.ByDescending(s => s.TotalContracts)">
         <a href="/contracts?vendor=@context.Vendor?.Id">@context.TotalContracts</a>
     </TemplateColumn>
-    <TemplateColumn Title="Total items" SortBy="GridSort<VendorSummary>.ByDescending(s => s.TotalItems)">
-        <a href="/items?vendor=@context.Vendor?.Id">@context.TotalItems</a>
+    <TemplateColumn Title="Total distinct items" SortBy="GridSort<VendorSummary>.ByDescending(s => s.TotalDistinctItems)">
+        <a href="/items?vendor=@context.Vendor?.Id">@context.TotalDistinctItems</a>
+    </TemplateColumn>    
+    <TemplateColumn Title="Total items quantity" SortBy="GridSort<VendorSummary>.ByDescending(s => s.TotalItemsQuantity)">
+        <a href="/items?vendor=@context.Vendor?.Id">@context.TotalItemsQuantity</a>
     </TemplateColumn>
-    <TemplateColumn Title="Items were in repair" SortBy="GridSort<VendorSummary>.ByDescending(s => s.ItemsRepaired)">
-        <span>@context.ItemsRepaired</span>
+    <TemplateColumn Title="Items were in repair" SortBy="GridSort<VendorSummary>.ByDescending(s => s.ItemsRepairedQuantity)">
+        <span>@context.ItemsRepairedQuantity</span>
     </TemplateColumn>
     <TemplateColumn Title="Reliability (%)" SortBy="GridSort<VendorSummary>.ByDescending(s => s.Reliability)">
         <span>@context.Reliability.ToString("F2")</span>
@@ -37,14 +55,36 @@
     private PaginationState paginationState = new() { ItemsPerPage = 10 };
 
     public List<VendorSummary> VendorSummaries { get; set; } = new();
+    public List<Item> ItemList { get; set; } = new();
 
-    protected override async Task OnInitializedAsync()
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "item")]
+    public int ItemId { get; set; }
+
+    protected override async Task OnParametersSetAsync()
     {
         if (!IsPrerendering)
         {
-            VendorSummaries = [.. await VendorRepository.FindAllWithSummary()];
+            if (ItemList.Count <= 0)
+                ItemList = [.. await ItemRepository.FindAll()];
+
+            VendorSummaries = ItemId > 0
+                ? [.. await VendorRepository.FindWithSummaryByItem(ItemId)]
+                : [.. await VendorRepository.FindAllWithSummary()];
         }
         
-        await base.OnInitializedAsync();
+        await base.OnParametersSetAsync();
+    }
+
+    public void UpdateQueryItem(int itemId)
+    {
+        Nav.NavigateTo(
+            Nav.GetUriWithQueryParameters(
+                new Dictionary<string, object?>()
+                    {
+                        { "item", itemId > 0 ? itemId : null },
+                    }
+            )
+        );
     }
 }

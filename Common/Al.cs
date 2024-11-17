@@ -9,6 +9,7 @@ public class Al
     public const string CountDistinctItems = "cdi";
     public const string CountItemsRepaired = "cir";
     public const string DeliveredItemList = "dil";
+    public const string TotalItemsQuantity = "tiq";
     public const string SoldItemList = "sil";
     public const string User = "u";
     public const string Sale = "s";
