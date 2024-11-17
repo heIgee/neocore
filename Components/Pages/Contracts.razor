@@ -4,7 +4,7 @@
 
 @inject ContractRepository ContractRepository
 @inject VendorRepository VendorRepository
-@inject NavigationManager NavigationManager 
+@inject NavigationManager Nav 
 
 <div class="col col-md-6 me-auto">
     <FilterComponent 
@@ -18,11 +18,18 @@
     />
 
     <label for="deliveryDateFrom">Delivery date from:</label>
-    <input class="mt-2 form-control" id="deliveryDateFrom" type="date" 
+    <input class="my-2 form-control" id="deliveryDateFrom" type="date" 
         @bind="DeliveryDateFrom" 
         @bind:event="oninput" 
         @onchange="() => UpdateQuery(VendorId)"
-    /> @* TODO debounce? *@
+    />
+
+    <label for="deliveryDateTo">Delivery date to:</label>
+    <input class="mt-2 form-control" id="deliveryDateTo" type="date" 
+        @bind="DeliveryDateTo" 
+        @bind:event="oninput" 
+        @onchange="() => UpdateQuery(VendorId)"
+    />
 </div>
 
 <h3 class="mt-2">
@@ -62,12 +69,19 @@
     [SupplyParameterFromQuery(Name = "from")]
     public DateOnly DeliveryDateFrom { get; set; }
 
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "to")]
+    public DateOnly DeliveryDateTo { get; set; }
+
     protected override async Task OnParametersSetAsync()
     {
         if (!IsPrerendering)
         {
             if (DeliveryDateFrom == DateOnly.MinValue)
                 DeliveryDateFrom = new DateOnly(2024, 01, 01);
+
+            if (DeliveryDateTo == DateOnly.MinValue)
+                DeliveryDateTo = new DateOnly(2025, 01, 01);
 
             if (Vendors.Count <= 0)
                 Vendors = [.. await VendorRepository.FindAll()];
@@ -80,30 +94,26 @@
 
     private async Task UpdateContracts()
     {
-        // Console.ForegroundColor = ConsoleColor.Red;
-        // Console.WriteLine("EXPENSIVE DATABASE REQUEST");
-        // Console.ResetColor();
         ContractList = [.. await ContractRepository.FindByFilter(new()
             {
                 VendorId = VendorId > 0 ? VendorId : null,
-                DeliveryDateFrom = DeliveryDateFrom
+                DeliveryDateFrom = DeliveryDateFrom,
+                DeliveryDateTo = DeliveryDateTo
             }
         )];
     }
 
     public void UpdateQuery(int vendorId)
     {
-        // if (ItemType != vendorId)
-        // {
-            NavigationManager.NavigateTo(
-                NavigationManager.GetUriWithQueryParameters(
-                    new Dictionary<string, object?>() 
-                    { 
-                        { "vendor", vendorId > 0 ? vendorId : null },
-                        { "from", DeliveryDateFrom != DateOnly.MinValue ? DeliveryDateFrom : null }
-                    }
-                )
-            );
-        // }
+        Nav.NavigateTo(
+            Nav.GetUriWithQueryParameters(
+                new Dictionary<string, object?>() 
+                { 
+                    { "vendor", vendorId > 0 ? vendorId : null },
+                    { "from", DeliveryDateFrom != DateOnly.MinValue ? DeliveryDateFrom : null },
+                    { "to", DeliveryDateTo != DateOnly.MinValue ? DeliveryDateTo : null }
+                }
+            )
+        );
     }
 }

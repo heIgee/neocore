@@ -25,21 +25,5 @@ public class ItemFilter : IFilter
             builder.With($"{Al.Item}, COUNT(DISTINCT {Al.Vendor}) as cdv")
                 .Where("cdv > 1");
         }
-
-        //builder.Where("($maxPrice IS NULL OR i.price <= $maxPrice)", "maxPrice", MaxPrice);
-
-        //if (ItemType.HasValue)
-        //{
-        //    builder.Where("($vendorId IS NULL OR (v.id = $vendorId AND v IS NOT NULL))", "vendorId", ItemType);
-        //}
-
-        //if (HasMultilpleVendors.HasValue)
-        //{
-        //    builder.With("i, COUNT(DISTINCT v) as vendorCount")
-        //        .Where("($hasMultipleVendors IS NULL OR " +
-        //            "($hasMultipleVendors = true AND vendorCount > 1) OR " +
-        //            "($hasMultipleVendors = false AND vendorCount <= 1))", 
-        //            "hasMultipleVendors", HasMultilpleVendors);
-        //}
     }
 }
