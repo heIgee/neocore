@@ -2,8 +2,6 @@
 
 @inherits NeocoreComponent
 
-@rendermode InteractiveServer
-
 @inject VendorRepository VendorRepository
 
 <h3 class="mt-2">
@@ -16,15 +14,21 @@
         SortBy="GridSort<VendorSummary>.ByAscending(s => s.Vendor == null ? null : s.Vendor.Id)">
         <a href="vendor/@context.Vendor?.Id">@context.Vendor?.Id</a>
     </TemplateColumn>
-
     <PropertyColumn Property="s => s.Vendor.Name" Sortable="true" />
-    <PropertyColumn Property="s => s.Vendor.ContactInfo" /> 
-        @* TODO proper titles *@
-    <TemplateColumn Title="Total contracts" Sortable="true" SortBy="GridSort<VendorSummary>.ByDescending(s => s.TotalContracts)">
+    <TemplateColumn Title="Contact info" SortBy="GridSort<VendorSummary>.ByDescending(s => s.Vendor.ContactInfo)">
+        @context.Vendor.ContactInfo
+    </TemplateColumn>
+    <TemplateColumn Title="Total contracts" SortBy="GridSort<VendorSummary>.ByDescending(s => s.TotalContracts)">
         <a href="/contracts?vendor=@context.Vendor?.Id">@context.TotalContracts</a>
     </TemplateColumn>
-    <TemplateColumn Title="Total items" Sortable="true" SortBy="GridSort<VendorSummary>.ByDescending(s => s.TotalItems)">
+    <TemplateColumn Title="Total items" SortBy="GridSort<VendorSummary>.ByDescending(s => s.TotalItems)">
         <a href="/items?vendor=@context.Vendor?.Id">@context.TotalItems</a>
+    </TemplateColumn>
+    <TemplateColumn Title="Items were in repair" SortBy="GridSort<VendorSummary>.ByDescending(s => s.ItemsRepaired)">
+        <span>@context.ItemsRepaired</span>
+    </TemplateColumn>
+    <TemplateColumn Title="Reliability (%)" SortBy="GridSort<VendorSummary>.ByDescending(s => s.Reliability)">
+        <span>@context.Reliability.ToString("F2")</span>
     </TemplateColumn>
     <Paginator State="paginationState"/>
 </QuickGrid>
@@ -38,13 +42,9 @@
     {
         if (!IsPrerendering)
         {
-            // Console.WriteLine("ULTRA HEAVY REQUEST " + Guid.NewGuid());
             VendorSummaries = [.. await VendorRepository.FindAllWithSummary()];
         }
         
-        // Vendors = [.. await VendorRepository.FindAll()];
-        // ComponentVendors = [.. await VendorRepository.FindByItemType("Component")];
-
         await base.OnInitializedAsync();
     }
 }

@@ -18,7 +18,7 @@ public class ContractRepository(IDriver driver) : NeocoreRepository(driver), ICo
             .OptionalMatch($"({Al.Item}:Item)-[su:SUPPLIED_UNDER]->({Al.Contract})")
             .OptionalMatch($"({Al.Contract})-[:SIGNED_WITH]->({Al.Vendor}:Vendor)")
             .Return($"{Al.Contract}, {Al.Vendor}, " +
-                $"COLLECT({{item: {Al.Item}, quantity: su.quantity}}) as {Al.ItemWithQuantityList}")
+                $"COLLECT({{item: {Al.Item}, quantity: su.quantity}}) as {Al.DeliveredItemList}")
             .Build();
 
         return await ExecuteReadSingleAsync(

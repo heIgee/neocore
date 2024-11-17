@@ -27,7 +27,7 @@ public class ContractExtended : INeocoreNode<ContractExtended>
             contract.Vendor = vendorNode is null ? null : Vendor.FromNode(vendorNode);
         }
 
-        if (record.TryGetValue(Al.ItemWithQuantityList, out var itemListValue))
+        if (record.TryGetValue(Al.DeliveredItemList, out var itemListValue))
         {
             var itemListNode = itemListValue?.As<IList<IDictionary<string, object>>>();
             contract.Items = itemListNode is null ? null : DeliveredItem.ListFromDictionaries(itemListNode);

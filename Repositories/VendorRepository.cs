@@ -44,9 +44,11 @@ public class VendorRepository(IDriver driver) : NeocoreRepository(driver), IVend
             .Match($"({Al.Vendor}:Vendor)")
             .OptionalMatch($"({Al.Vendor})<-[:SIGNED_WITH]-({Al.Contract}:Contract)")
             .OptionalMatch($"({Al.Contract})<-[:SUPPLIED_UNDER]-({Al.Item}:Item)")
+            .OptionalMatch($"({Al.Item})<-[:INVOLVES]-({Al.Repair}:Repair)")
             .Return(@$"{Al.Vendor}, 
                 COUNT(DISTINCT {Al.Contract}) AS {Al.CountDistinctContracts},
-                COUNT(DISTINCT {Al.Item}) AS {Al.CountDistinctItems}")
+                COUNT(DISTINCT {Al.Item}) AS {Al.CountDistinctItems},
+                COUNT(DISTINCT {Al.Repair}) AS {Al.CountItemsRepaired}")
             .Build();
 
         return await ExecuteReadListAsync(
@@ -55,21 +57,6 @@ public class VendorRepository(IDriver driver) : NeocoreRepository(driver), IVend
             VendorSummary.FromRecord
         );
     }
-
-    //public async Task<IEnumerable<Employee>> FindByItemType(string productType)
-    //{
-    //    const string query = @$"
-    //        MATCH ({Al.Employee}:Employee)
-    //        <-[:SIGNED_WITH]-(ContractExtended)
-    //        <-[:SUPPLIED_UNDER]-(p:Item {{type: $productType}}) 
-    //        RETURN DISTINCT {Al.Employee}
-    //    ";
-    //    return await ExecuteReadListAsync(
-    //        query,
-    //        new { productType },
-    //        Employee.FromRecord
-    //    );
-    //}
         
     public async Task Delete(int id)
     {
@@ -90,13 +77,10 @@ public class VendorRepository(IDriver driver) : NeocoreRepository(driver), IVend
             Cannot update non-existent {nameof(Vendor)} (id: {id})
         ");
 
-        //await Delete(id);
-        //await Add(vendor);
-
-        var query = new StringBuilder(@" 
-            MATCH (v:Vendor {id: $id})
-            SET v.name = $name, v.contactInfo = $contactInfo
-        "); // TODO aliases
+        var query = new StringBuilder(@$" 
+            MATCH ({Al.Vendor}:Vendor {{id: $id}})
+            SET {Al.Vendor}.name = $name, {Al.Vendor}.contactInfo = $contactInfo
+        ");
 
         object parameters = new
         {
@@ -115,9 +99,9 @@ public class VendorRepository(IDriver driver) : NeocoreRepository(driver), IVend
     {
         int id = await NewId();
 
-        var query = new StringBuilder(@" 
-            CREATE (v:Vendor {id: $id, name: $name, contactInfo: $contactInfo})
-        "); // TODO aliases
+        var query = new StringBuilder(@$" 
+            CREATE ({Al.Vendor}:Vendor {{id: $id, name: $name, contactInfo: $contactInfo}})
+        ");
 
         object parameters = new
         {

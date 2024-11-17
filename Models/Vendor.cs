@@ -15,22 +15,10 @@ public class Vendor : INeocoreNode<Vendor>
         return node is null ? new() : FromNode(node);  
     }
 
-    public static Vendor FromNode(INode node)
+    public static Vendor FromNode(INode node) => new()
     {
-        Console.WriteLine("Labels: " + string.Join(", ", node.Labels));
-        
-        Console.WriteLine("Properties:");
-        foreach (var property in node.Properties)
-        {
-            Console.WriteLine($"{property.Key}: {property.Value}");
-        }
-
-
-        return new()
-        {
-            Id = node.Properties["id"].As<int>(),
-            Name = node.Properties["name"].As<string>(),
-            ContactInfo = node.Properties["contactInfo"].As<string>()
-        };
-    }
+        Id = node.Properties["id"].As<int>(),
+        Name = node.Properties["name"].As<string>(),
+        ContactInfo = node.Properties["contactInfo"].As<string>()
+    };
 }
