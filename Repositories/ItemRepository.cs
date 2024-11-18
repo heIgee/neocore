@@ -58,11 +58,8 @@ public class ItemRepository(IDriver driver) : NeocoreRepository(driver), IItemRe
         var builder = new QueryBuilder()
             .Match($"({Al.Item}:Item)")
             .OptionalMatch($"({Al.Vendor}:Vendor)<-[:SIGNED_WITH]-(ContractExtended)<-[:SUPPLIED_UNDER]-({Al.Item})");
-        //.Match($"({Al.Item}:Item)-[:SUPPLIED_UNDER]->(ContractExtended)-[:SIGNED_WITH]->({Al.Employee}:Employee)"); // wwww
 
         filter.Apply(builder);
-
-        //builder.OptionalMatch($"({Al.Employee}:Employee)<-[:SIGNED_WITH]-(ContractExtended)<-[:SUPPLIED_UNDER]-({Al.Item})");
 
         builder.Return($"DISTINCT {Al.Item}");
 
@@ -81,7 +78,7 @@ public class ItemRepository(IDriver driver) : NeocoreRepository(driver), IItemRe
             MATCH (i:Item {id: $id})
             DETACH DELETE i
         ";
-        
+
         await ExecuteWriteSingleAsync(
             query,
             new { id }
@@ -124,7 +121,7 @@ public class ItemRepository(IDriver driver) : NeocoreRepository(driver), IItemRe
             CREATE (i:Item {id: $id, name: $name, type: $type, 
                 manufacturer: $manufacturer, specifications: $specifications, 
                 price: $price})
-        "); // TODO aliases
+        "); 
 
         object parameters = new
         {

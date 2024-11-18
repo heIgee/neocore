@@ -18,7 +18,7 @@ public class VendorRepository(IDriver driver) : NeocoreRepository(driver), IVend
             .Build();
 
         return await ExecuteReadSingleAsync(
-            query, 
+            query,
             parameters,
             Vendor.FromRecord
         );
@@ -57,14 +57,14 @@ public class VendorRepository(IDriver driver) : NeocoreRepository(driver), IVend
             VendorSummary.FromRecord
         );
     }
-        
+
     public async Task Delete(int id)
     {
         const string query = @"
             MATCH (v:Vendor {id: $id})
             DETACH DELETE v
         ";
-        
+
         await ExecuteWriteSingleAsync(
             query,
             new { id }

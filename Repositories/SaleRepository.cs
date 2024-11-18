@@ -2,12 +2,13 @@
 using Neocore.Common;
 using Neocore.Filters;
 using Neocore.Models;
+using Neocore.Repositories.Abstract;
 using Neocore.ViewModels;
 using System.Text;
 
 namespace Neocore.Repositories;
 
-public class SaleRepository(IDriver driver) : NeocoreRepository(driver)
+public class SaleRepository(IDriver driver) : NeocoreRepository(driver), ISaleRepository
 {
     public async Task<IEnumerable<Sale>> FindAll()
     {
@@ -51,8 +52,6 @@ public class SaleRepository(IDriver driver) : NeocoreRepository(driver)
             .Return($"{Al.Sale}, {Al.Employee}, {Al.Customer}, {Al.SoldItemList}")
             .Build();
 
-        Console.WriteLine(query);
-
         return await ExecuteReadSingleAsync(
             query,
             parameters,
@@ -71,11 +70,10 @@ public class SaleRepository(IDriver driver) : NeocoreRepository(driver)
               $"collect({{item: {Al.Item}, quantity: inc.quantity, warrantyTerms: inc.warrantyTerms}}) as {Al.SoldItemList}");
 
         filter.Apply(builder);
-    
+
         builder.Return($"{Al.Sale}, {Al.Employee}, {Al.Customer}, {Al.SoldItemList}");
-    
+
         var (query, parameters) = builder.Build();
-        Console.WriteLine(query);
 
         return await ExecuteReadListAsync(
             query,
@@ -84,47 +82,8 @@ public class SaleRepository(IDriver driver) : NeocoreRepository(driver)
         );
     }
 
-    //public async Task Update(int id, Sale sale)
-    //{
-    //    _ = await FindById(id) ?? throw new InvalidOperationException(@$"
-    //        Cannot update non-existent {nameof(Sale)} (id: {id})
-    //    ");
-
-    //    var query = new StringBuilder(@$" 
-    //        MATCH ({Al.Sale}:Sale {{id: $id}})
-    //        SET {Al.Sale}.name = $name, 
-    //            {Al.Sale}.role = $role, 
-    //            {Al.Sale}.password = $password
-    //    "); 
-
-    //    object parameters = GetParams(id, sale);
-
-    //    await ExecuteWriteSingleAsync(
-    //        query.ToString(),
-    //        parameters
-    //    );
-    //}
-
-    //public async Task Add(Sale sale)
-    //{
-    //    int id = await NewId();
-
-    //    var query = new StringBuilder(@$" 
-    //        CREATE ({Al.Sale}:Sale {{id: $id, total: $total, date: $date }})
-    //    ");
-
-    //    object parameters = GetParams(id, sale);
-
-    //    await ExecuteWriteSingleAsync(
-    //        query.ToString(),
-    //        parameters
-    //    );
-    //}
-
     public async Task Update(int id, SaleExtended saleX)
     {
-        Console.WriteLine(id);
-
         _ = await FindById(id) ?? throw new InvalidOperationException(@$"
             Cannot update non-existent {nameof(SaleExtended)} (id: {id})
         ");
@@ -203,7 +162,7 @@ public class SaleRepository(IDriver driver) : NeocoreRepository(driver)
             MATCH (s:Sale {id: $id})
             DETACH DELETE s
         ";
-        
+
         await ExecuteWriteSingleAsync(
             query,
             new { id }

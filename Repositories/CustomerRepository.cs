@@ -1,10 +1,11 @@
 ﻿using Neo4j.Driver;
 using Neocore.Common;
 using Neocore.Models;
+using Neocore.Repositories.Abstract;
 
 namespace Neocore.Repositories;
 
-public class CustomerRepository(IDriver driver) : NeocoreRepository(driver)
+public class CustomerRepository(IDriver driver) : NeocoreRepository(driver), ICustomerRepository
 {
     public async Task<IEnumerable<Customer>> FindAll()
     {
@@ -48,15 +49,13 @@ public class CustomerRepository(IDriver driver) : NeocoreRepository(driver)
             .Return($"DISTINCT {Al.Customer}")
             .Build();
 
-        Console.WriteLine(query);
-
         return await ExecuteReadListAsync(
             query,
             parameters,
             Customer.FromRecord
         );
     }
-    
+
     public async Task Update(int id, Customer customer)
     {
         _ = await FindById(id) ?? throw new InvalidOperationException(@$"
@@ -98,7 +97,7 @@ public class CustomerRepository(IDriver driver) : NeocoreRepository(driver)
             MATCH ({Al.Customer}:Customer {{id: $id}})
             DETACH DELETE {Al.Customer}
         ";
-        
+
         await ExecuteWriteSingleAsync(
             query,
             new { id }

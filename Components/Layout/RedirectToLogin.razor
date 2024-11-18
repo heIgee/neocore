@@ -7,9 +7,6 @@
         if (!AuthService.IsAuthenticated)
         {
             var returnUrl = Nav.Uri;
-            Console.WriteLine(returnUrl); 
-
-            Console.WriteLine("Redirect TO login");
             Nav.NavigateTo($"/login?returnUrl={Uri.UnescapeDataString(returnUrl)}");
         }
     }

@@ -64,10 +64,7 @@ public class ContractRepository(IDriver driver) : NeocoreRepository(driver), ICo
     public async Task<IEnumerable<ContractSummary>> FindByFilterWithSummary(ContractFilter filter)
     {
         var builder = new QueryBuilder()
-            //.Match($"({Al.ContractExtended}:ContractExtended)")
-            //.OptionalMatch($"({Al.ContractExtended})-[:SIGNED_WITH]->()");
             .Match($"({Al.Contract}:Contract)-[:SIGNED_WITH]->({Al.Vendor}:Vendor)");
-            //.OptionalMatch($"({Al.ContractExtended})<-[r:SUPPLIED_UNDER]-({Al.Item}:Item)");
 
         filter.Apply(builder);
 
@@ -80,15 +77,15 @@ public class ContractRepository(IDriver driver) : NeocoreRepository(driver), ICo
             parameters,
             ContractSummary.FromRecord
         );
-    }   
-    
+    }
+
     public async Task Delete(int id)
     {
         const string query = @"
             MATCH (c:Contract {id: $id})
             DETACH DELETE c
         ";
-        
+
         await ExecuteWriteSingleAsync(
             query,
             new { id }
@@ -111,7 +108,7 @@ public class ContractRepository(IDriver driver) : NeocoreRepository(driver), ICo
 
         var query = new StringBuilder(@" 
             CREATE (c:Contract {id: $id, deliveryDate: $deliveryDate})
-        "); // TODO aliases
+        ");
 
         var parameters = new Dictionary<string, object>()
         {
@@ -132,10 +129,10 @@ public class ContractRepository(IDriver driver) : NeocoreRepository(driver), ICo
         }
 
         var items = contract.Items?.Select(iwq =>
-            new Dictionary<string, int?> 
-            { 
-                ["itemId"] = iwq.Item?.Id, 
-                ["quantity"] = iwq.Quantity 
+            new Dictionary<string, int?>
+            {
+                ["itemId"] = iwq.Item?.Id,
+                ["quantity"] = iwq.Quantity
             }
         ).ToList();
 

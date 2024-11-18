@@ -23,16 +23,15 @@ public class Program
             GraphDatabase.Driver("neo4j://localhost:7687", AuthTokens.Basic("neo4j", "neo4j"))
         );
 
-        //builder.Services.AddScoped<IProductRepository, ProductRepository>();
         builder.Services
-            .AddScoped<ItemRepository>()
-            .AddScoped<VendorRepository>()
-            .AddScoped<ContractRepository>()
+            .AddScoped<IContractRepository, ContractRepository>()
+            .AddScoped<ICustomerRepository, CustomerRepository>()
+            .AddScoped<IEmployeeRepository, EmployeeRepository>()
+            .AddScoped<IItemRepository, ItemRepository>()
+            .AddScoped<IRepairRepository, RepairRepository>()
+            .AddScoped<ISaleRepository, SaleRepository>()
             .AddScoped<IUserRepository, UserRepository>()
-            .AddScoped<SaleRepository>()
-            .AddScoped<EmployeeRepository>()
-            .AddScoped<CustomerRepository>()
-            .AddScoped<RepairRepository>()
+            .AddScoped<IVendorRepository, VendorRepository>()
             .AddScoped<IAuthService, AuthService>()
             .AddBlazoredLocalStorage()
         ;

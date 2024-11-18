@@ -41,18 +41,4 @@ public class ContractExtended : INeocoreNode<ContractExtended>
         Id = node.Properties["id"].As<int>(),
         DeliveryDate = node.Properties["deliveryDate"].As<LocalDate>()
     };
-
-    //public static ContractExtended FromNode(INode node)
-    //{
-    //    var contract = new ContractExtended();
-    //    var props = node.Properties;
-
-    //    contract.Id = props.TryGetValue("id", out var id)
-    //        ? id.As<int>() : null;
-
-    //    contract.DeliveryDate = props.TryGetValue("deliveryDate", out var deliveryDate)
-    //        ? deliveryDate.As<LocalDate>() : null;
-
-    //    return contract;
-    //}
 }

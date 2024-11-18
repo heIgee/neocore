@@ -79,14 +79,14 @@ public class UserRepository(IDriver driver) : NeocoreRepository(driver), IUserRe
             SET {Al.User}.name = $name, 
                 {Al.User}.role = $role, 
                 {Al.User}.password = $password
-        "); 
+        ");
 
         object parameters = new
         {
             id,
             name = user.Name ?? string.Empty,
-            role = user.Role.HasValue 
-                ? user.Role.Value.ToString().ToLower() 
+            role = user.Role.HasValue
+                ? user.Role.Value.ToString().ToLower()
                 : UserRole.Viewer.ToString().ToLower(),
             password = user.Password ?? string.Empty,
         };
@@ -105,13 +105,13 @@ public class UserRepository(IDriver driver) : NeocoreRepository(driver), IUserRe
             CREATE ({Al.User}:User {{id: $id, name: $name, role: $role, password: $password}})
         ");
 
-       object parameters = new
+        object parameters = new
         {
             id,
             name = user.Name ?? string.Empty,
-            role = user.Role.HasValue 
-                ? user.Role.Value.ToString().ToLower() 
-                : UserRole.Viewer.ToString().ToLower(),
+            role = user.Role.HasValue
+                 ? user.Role.Value.ToString().ToLower()
+                 : UserRole.Viewer.ToString().ToLower(),
             password = user.Password ?? string.Empty,
         }; // TODO: get params reusable method
 
@@ -127,7 +127,7 @@ public class UserRepository(IDriver driver) : NeocoreRepository(driver), IUserRe
             MATCH (u:User {id: $id})
             DETACH DELETE u
         ";
-        
+
         await ExecuteWriteSingleAsync(
             query,
             new { id }

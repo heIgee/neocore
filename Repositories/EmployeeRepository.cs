@@ -1,10 +1,11 @@
 ﻿using Neo4j.Driver;
 using Neocore.Common;
 using Neocore.Models;
+using Neocore.Repositories.Abstract;
 
 namespace Neocore.Repositories;
 
-public class EmployeeRepository(IDriver driver) : NeocoreRepository(driver)
+public class EmployeeRepository(IDriver driver) : NeocoreRepository(driver), IEmployeeRepository
 {
     public async Task<IEnumerable<Employee>> FindAll()
     {
@@ -18,7 +19,7 @@ public class EmployeeRepository(IDriver driver) : NeocoreRepository(driver)
             new { },
             Employee.FromRecord
         );
-    }    
+    }
 
     public async Task<Employee?> FindById(int id)
     {
@@ -76,7 +77,7 @@ public class EmployeeRepository(IDriver driver) : NeocoreRepository(driver)
             MATCH ({Al.Employee}:Employee {{id: $id}})
             DETACH DELETE {Al.Employee}
         ";
-        
+
         await ExecuteWriteSingleAsync(
             query,
             new { id }

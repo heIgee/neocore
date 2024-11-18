@@ -2,8 +2,8 @@
 
 @inherits NeocoreComponent
 
-@inject ContractRepository ContractRepository
-@inject VendorRepository VendorRepository
+@inject IContractRepository ContractRepository
+@inject IVendorRepository VendorRepository
 @inject NavigationManager Nav 
 
 <div class="col col-md-6 me-auto">
@@ -44,7 +44,12 @@
     >
         <a href="contract/@context.Id">@context.Id</a>
     </TemplateColumn>
-    <PropertyColumn Property="c => c.DeliveryDate" Sortable="true" />
+    <TemplateColumn 
+        Title="Delivery date" 
+        SortBy="GridSort<ContractExtended>.ByDescending(c => c.DeliveryDate)"
+    >
+        @context.DeliveryDate
+    </TemplateColumn>
     <TemplateColumn 
         Title="Signed with" 
         SortBy="GridSort<ContractExtended>.ByAscending(c => c.Vendor == null ? null : c.Vendor.Name)"

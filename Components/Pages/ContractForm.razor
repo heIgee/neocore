@@ -2,9 +2,9 @@
 
 @inherits NeocoreComponent
 
-@inject ContractRepository ContractRepository
-@inject VendorRepository VendorRepository
-@inject ItemRepository ItemRepository
+@inject IContractRepository ContractRepository
+@inject IVendorRepository VendorRepository
+@inject IItemRepository ItemRepository
 @inject NavigationManager NavigationManager
 
 <RoleGuard MinimumRole="UserRole.Editor">

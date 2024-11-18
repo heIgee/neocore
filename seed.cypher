@@ -1,4 +1,4 @@
-// Items
+﻿// Items
 create (i1:Item {id: 1, name: 'Intel i7 Processor', type: 'Component', manufacturer: 'Intel', specifications: '3.6GHz, 8 cores', price: 300.0})
 create (i2:Item {id: 2, name: 'NVIDIA GeForce RTX 3080', type: 'Component', manufacturer: 'NVIDIA', specifications: '10GB GDDR6X', price: 700.0})
 create (i3:Item {id: 3, name: '1TB SSD', type: 'Component', manufacturer: 'Samsung', specifications: 'NVMe, 3500MB/s read', price: 150.0})
@@ -11,6 +11,14 @@ create (i9:Item {id: 9, name: '2TB SSD', type: 'Component', manufacturer: 'Samsu
 create (i10:Item {id: 10, name: '24" 1080p Monitor', type: 'Peripheral', manufacturer: 'LG', specifications: '1920x1080, 75Hz', price: 200.0})
 create (i11:Item {id: 11, name: 'Wireless Mouse', type: 'Peripheral', manufacturer: 'Logitech', specifications: '2.4GHz, 16000 DPI', price: 70.0})
 create (i12:Item {id: 12, name: 'Ultrabook', type: 'Laptop', manufacturer: 'Dell', specifications: 'i5, 8GB RAM, Intel Iris Xe', price: 1000.0})
+create (i13:Item {id: 13, name: 'HP LaserJet Printer', type: 'Printer', manufacturer: 'HP', specifications: '600dpi, Duplex', price: 280.0})
+create (i14:Item {id: 14, name: 'Epson Scanner', type: 'Scanner', manufacturer: 'Epson', specifications: '4800dpi, A4', price: 150.0})
+create (i15:Item {id: 15, name: 'DVD-RW Drive', type: 'Optical', manufacturer: 'LG', specifications: '24x speed', price: 45.0})
+create (i16:Item {id: 16, name: 'Blu-ray Drive', type: 'Optical', manufacturer: 'ASUS', specifications: '16x speed', price: 89.0})
+create (i17:Item {id: 17, name: 'Canon MFP', type: 'Printer', manufacturer: 'Canon', specifications: 'Print/Scan/Copy', price: 340.0})
+create (i18:Item {id: 18, name: 'Gaming Mouse', type: 'Peripheral', manufacturer: 'Razer', specifications: '20000 DPI, RGB', price: 89.0})
+create (i19:Item {id: 19, name: '32" Curved Monitor', type: 'Peripheral', manufacturer: 'Samsung', specifications: '2560x1440, 144Hz', price: 450.0})
+create (i20:Item {id: 20, name: 'RTX 4080', type: 'Component', manufacturer: 'NVIDIA', specifications: '16GB GDDR6X', price: 1199.0})
 
 // Vendors
 create (s1:Vendor {id: 1, name: 'TechSupply Co.', contactInfo: 'techsupply@example.com'})
@@ -19,6 +27,10 @@ create (s3:Vendor {id: 3, name: 'GadgetWorld', contactInfo: 'gadgetworld@example
 create (s4:Vendor {id: 4, name: 'CompuHub', contactInfo: 'compuhub@example.com'})
 create (s5:Vendor {id: 5, name: 'PeripheralPro', contactInfo: 'peripheralpro@example.com'})
 create (s6:Vendor {id: 6, name: 'LaptopLand', contactInfo: 'laptopland@example.com'})
+create (s7:Vendor {id: 7, name: 'PrinterParadise', contactInfo: 'printerparadise@example.com'})
+create (s8:Vendor {id: 8, name: 'ScannerSpecialists', contactInfo: 'scannerspec@example.com'})
+create (s9:Vendor {id: 9, name: 'OpticalOutlet', contactInfo: 'opticaloutlet@example.com'})
+create (s10:Vendor {id: 10, name: 'GlobalGadgets', contactInfo: 'globalgadgets@example.com'})
 
 // Contracts
 create (c1:Contract {id: 1, deliveryDate: date('2024-07-01')})
@@ -29,21 +41,31 @@ create (c5:Contract {id: 5, deliveryDate: date('2024-07-20')})
 create (c6:Contract {id: 6, deliveryDate: date('2024-07-25')})
 create (c7:Contract {id: 7, deliveryDate: date('2024-07-30')})
 create (c8:Contract {id: 8, deliveryDate: date('2024-08-01')})
+create (c9:Contract {id: 9, deliveryDate: date('2024-08-05')})
+create (c10:Contract {id: 10, deliveryDate: date('2024-08-10')})
+create (c11:Contract {id: 11, deliveryDate: date('2024-08-15')})
+create (c12:Contract {id: 12, deliveryDate: date('2024-08-20')})
 
 // Users
-create (u1:User {id: 1, name: 'Don', password: 'owner', role: 'owner'})
-create (u2:User {id: 2, name: 'Joe', password: 'editor', role: 'editor'})
-create (u3:User {id: 3, name: 'Kam', password: 'viewer', role: 'viewer'})
+create (u1:User {id: 1, name: 'Donald', password: 'owner', role: 'owner'})
+create (u2:User {id: 2, name: 'Joseph', password: 'editor', role: 'editor'})
+create (u3:User {id: 3, name: 'Kamala', password: 'viewer', role: 'viewer'})
 
 // Customers
 create (cu1:Customer {id: 1, fullName: 'John Smith'})
 create (cu2:Customer {id: 2, fullName: 'Mary Johnson'})
 create (cu3:Customer {id: 3, fullName: 'Robert Davis'})
+create (cu4:Customer {id: 4, fullName: 'Emma Wilson'})
+create (cu5:Customer {id: 5, fullName: 'Michael Brown'})
+create (cu6:Customer {id: 6, fullName: 'Sarah Miller'})
+create (cu7:Customer {id: 7, fullName: 'David Anderson'})
 
 // Employees
 create (e1:Employee {id: 1, fullName: 'Alice Wilson'})
 create (e2:Employee {id: 2, fullName: 'Bob Miller'})
 create (e3:Employee {id: 3, fullName: 'Carol Brown'})
+create (e4:Employee {id: 4, fullName: 'Daniel Lee'})
+create (e5:Employee {id: 5, fullName: 'Eva Garcia'})
 
 // Sales
 create (sa1:Sale {id: 1, total: 1500.0, date: date('2024-10-01'), isBuild: false})
@@ -51,11 +73,17 @@ create (sa2:Sale {id: 2, total: 2200.0, date: date('2024-10-05'), isBuild: false
 create (sa3:Sale {id: 3, total: 800.0, date: date('2024-10-08'), isBuild: false})
 create (sa4:Sale {id: 4, total: 2000.0, date: date('2024-10-11'), isBuild: true})
 create (sa5:Sale {id: 5, total: 1200.0, date: date('2024-10-13'), isBuild: true})
+create (sa6:Sale {id: 6, total: 890.0, date: date('2024-10-15'), isBuild: false})
+create (sa7:Sale {id: 7, total: 1750.0, date: date('2024-10-18'), isBuild: true})
+create (sa8:Sale {id: 8, total: 450.0, date: date('2024-10-20'), isBuild: false})
 
 // Repairs
 create (r1:Repair {id: 1, status: 'HandedOver', isWarranty: true, cause: 'Faulty RAM', price: 0.0, handedDate: date('2024-10-02'), returnedDate: null})
 create (r2:Repair {id: 2, status: 'Returned', isWarranty: false, cause: 'Broken screen', price: 200.0, handedDate: date('2024-09-25'), returnedDate: date('2024-10-01')})
 create (r3:Repair {id: 3, status: 'InProgress', isWarranty: true, cause: 'GPU artifacts', price: 0.0, handedDate: date('2024-10-07'), returnedDate: null})
+create (r4:Repair {id: 4, status: 'HandedOver', isWarranty: false, cause: 'Printer head is damaged', price: 150.0, handedDate: date('2024-10-10'), returnedDate: null})
+create (r5:Repair {id: 5, status: 'Returned', isWarranty: true, cause: 'DVD drive failure', price: 0.0, handedDate: date('2024-10-05'), returnedDate: date('2024-10-12')})
+create (r6:Repair {id: 6, status: 'InProgress', isWarranty: false, cause: 'Scanner calibration', price: 80.0, handedDate: date('2024-10-15'), returnedDate: null})
 
 // Relationships between contracts and vendors
 create (c1)-[:SIGNED_WITH]->(s1)
@@ -66,6 +94,10 @@ create (c5)-[:SIGNED_WITH]->(s3)
 create (c6)-[:SIGNED_WITH]->(s3)
 create (c7)-[:SIGNED_WITH]->(s4)
 create (c8)-[:SIGNED_WITH]->(s5)
+create (c9)-[:SIGNED_WITH]->(s7)
+create (c10)-[:SIGNED_WITH]->(s8)
+create (c11)-[:SIGNED_WITH]->(s9)
+create (c12)-[:SIGNED_WITH]->(s10)
 
 // Relationships between items and contracts
 create (i1)-[:SUPPLIED_UNDER {quantity: 50}]->(c1)
@@ -84,6 +116,14 @@ create (i9)-[:SUPPLIED_UNDER {quantity: 60}]->(c8)
 create (i10)-[:SUPPLIED_UNDER {quantity: 80}]->(c4)
 create (i11)-[:SUPPLIED_UNDER {quantity: 90}]->(c7)
 create (i12)-[:SUPPLIED_UNDER {quantity: 30}]->(c8)
+create (i13)-[:SUPPLIED_UNDER {quantity: 40}]->(c9)
+create (i14)-[:SUPPLIED_UNDER {quantity: 35}]->(c10)
+create (i15)-[:SUPPLIED_UNDER {quantity: 100}]->(c11)
+create (i16)-[:SUPPLIED_UNDER {quantity: 45}]->(c11)
+create (i17)-[:SUPPLIED_UNDER {quantity: 25}]->(c9)
+create (i18)-[:SUPPLIED_UNDER {quantity: 150}]->(c12)
+create (i19)-[:SUPPLIED_UNDER {quantity: 30}]->(c12)
+create (i20)-[:SUPPLIED_UNDER {quantity: 20}]->(c12)
 
 // Relationships between sales, customers, and employees
 create (sa1)-[:ORDERED_BY]->(cu1)
@@ -91,12 +131,18 @@ create (sa2)-[:ORDERED_BY]->(cu2)
 create (sa3)-[:ORDERED_BY]->(cu3)
 create (sa4)-[:ORDERED_BY]->(cu1)
 create (sa5)-[:ORDERED_BY]->(cu3)
+create (sa6)-[:ORDERED_BY]->(cu4)
+create (sa7)-[:ORDERED_BY]->(cu5)
+create (sa8)-[:ORDERED_BY]->(cu6)
 
 create (sa1)-[:SOLD_BY]->(e1)
 create (sa2)-[:SOLD_BY]->(e2)
 create (sa3)-[:SOLD_BY]->(e3)
 create (sa4)-[:SOLD_BY]->(e1)
-create (sa5)-[:SOLD_BY]->(e2)
+create (sa5)-[:SOLD_BY]->(e4)
+create (sa6)-[:SOLD_BY]->(e5)
+create (sa7)-[:SOLD_BY]->(e2)
+create (sa8)-[:SOLD_BY]->(e1)
 
 // Relationships between sales and items
 create (sa1)-[:INCLUDES {quantity: 1, warrantyTerms: '2 years standard warranty'}]->(i6)
@@ -111,16 +157,31 @@ create (sa5)-[:INCLUDES {quantity: 1, warrantyTerms: '1 year standard warranty'}
 create (sa5)-[:INCLUDES {quantity: 1, warrantyTerms: '1 year standard warranty'}]->(i9)
 create (sa5)-[:INCLUDES {quantity: 1, warrantyTerms: '1 year standard warranty'}]->(i10)
 create (sa5)-[:INCLUDES {quantity: 1, warrantyTerms: '1 year standard warranty'}]->(i11)
+create (sa6)-[:INCLUDES {quantity: 1, warrantyTerms: '2 years standard warranty'}]->(i13)
+create (sa6)-[:INCLUDES {quantity: 1, warrantyTerms: '1 year standard warranty'}]->(i14)
+create (sa7)-[:INCLUDES {quantity: 1, warrantyTerms: '3 years extended warranty'}]->(i19)
+create (sa7)-[:INCLUDES {quantity: 1, warrantyTerms: '3 years extended warranty'}]->(i20)
+create (sa8)-[:INCLUDES {quantity: 1, warrantyTerms: '1 year standard warranty'}]->(i15)
+create (sa8)-[:INCLUDES {quantity: 1, warrantyTerms: '1 year standard warranty'}]->(i16)
 
 // Relationships between repairs, items, and customers
 create (r1)-[:INVOLVES]->(i1)
 create (r2)-[:INVOLVES]->(i4)
 create (r3)-[:INVOLVES]->(i2)
+create (r4)-[:INVOLVES]->(i13)
+create (r5)-[:INVOLVES]->(i15)
+create (r6)-[:INVOLVES]->(i14)
 
 create (r1)-[:REQUESTED_BY]->(cu2)
 create (r2)-[:REQUESTED_BY]->(cu3)
 create (r3)-[:REQUESTED_BY]->(cu2)
+create (r4)-[:REQUESTED_BY]->(cu4)
+create (r5)-[:REQUESTED_BY]->(cu5)
+create (r6)-[:REQUESTED_BY]->(cu6)
 
 create (r1)-[:HANDLED_BY]->(e2)
 create (r2)-[:HANDLED_BY]->(e1)
 create (r3)-[:HANDLED_BY]->(e3)
+create (r4)-[:HANDLED_BY]->(e4)
+create (r5)-[:HANDLED_BY]->(e5)
+create (r6)-[:HANDLED_BY]->(e2)

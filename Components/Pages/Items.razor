@@ -2,8 +2,8 @@
 
 @inherits NeocoreComponent
 
-@inject ItemRepository ItemRepository
-@inject VendorRepository VendorRepository
+@inject IItemRepository ItemRepository
+@inject IVendorRepository VendorRepository
 @inject NavigationManager NavigationManager
 
 <div class="col col-md-6 me-auto">
@@ -90,9 +90,6 @@
 
     private async Task UpdateItemList()
     {
-        // Console.ForegroundColor = ConsoleColor.Red;
-        // Console.WriteLine("EXPENSIVE DATABASE REQUEST");
-        // Console.ResetColor();
         ItemList = [.. await ItemRepository.FindByFilter(new() 
             {
                 VendorId = VendorId > 0 ? VendorId : null,
@@ -100,15 +97,6 @@
                 HasMultilpleVendors = HasMultilpleVendors ? HasMultilpleVendors : null
             }
         )];
-
-        // if (ItemType <= 0)
-        // {
-        //     ItemWithQuantityList = [.. await ItemRepository.FindAll()];
-        // }
-        // else
-        // {
-        //     ItemWithQuantityList = [.. await ItemRepository.FindByVendor(ItemType)];
-        // }
     }
 
     public void UpdateQuery(int vendorId)
@@ -129,16 +117,4 @@
             )
         );
     }
-
-    // protected override async Task OnAfterRenderAsync(bool firstRender)
-    // {
-    //     if (firstRender)
-    //     {
-    //         Console.WriteLine("BEFORE VENDORS SET");
-    //         Vendors = [.. await VendorRepository.FindAll()];
-    //         Console.WriteLine("AFTER VENDORS SET");
-    //     }
-
-    //     await base.OnAfterRenderAsync(firstRender);
-    // }
 }

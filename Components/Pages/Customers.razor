@@ -2,38 +2,36 @@
 
 @inherits NeocoreComponent
 
-@inject CustomerRepository CustomerRepository
-@inject VendorRepository VendorRepository
+@inject ICustomerRepository CustomerRepository
+@inject IVendorRepository VendorRepository
 @inject NavigationManager Nav
 
-<RoleGuard MinimumRole="UserRole.Editor">
-    <div class="col col-md-6 me-auto">
-        <FilterComponent TEntity="Vendor"
-            SelectedId="VendorId"
-            Entities="VendorList"
-            EntityId="@(v => v.Id)"
-            EntityName="@(v => v.Name)"
-            OnEntityFilter="UpdateQuery"
-            Label="Bought items delivered by:" 
-        />
-    </div>
+<div class="col col-md-6 me-auto">
+    <FilterComponent TEntity="Vendor"
+        SelectedId="VendorId"
+        Entities="VendorList"
+        EntityId="@(v => v.Id)"
+        EntityName="@(v => v.Name)"
+        OnEntityFilter="UpdateQuery"
+        Label="Bought items delivered by:" 
+    />
+</div>
 
-    <h3 class="mt-2">
-        Customers
-        <a href="/customer" class="btn btn-sm ms-2 py-1 btn-success">+ New</a>
-    </h3>
+<h3 class="mt-2">
+    Customers
+    <a href="/customer" class="btn btn-sm ms-2 py-1 btn-success">+ New</a>
+</h3>
 
-    <QuickGrid class="nc-grid" Items="CustomerList.AsQueryable()" Pagination="paginationState">
-        <TemplateColumn class="nc-narrow" Title="Id"
-                        SortBy="GridSort<Customer>.ByAscending(i => i.Id)">
-            <a href="customer/@context.Id">@context.Id</a>
-        </TemplateColumn>
-        <TemplateColumn Title="Full name" SortBy="GridSort<Customer>.ByAscending(i => i.FullName)">
-            @context.FullName
-        </TemplateColumn>
-        <Paginator State="paginationState" />
-    </QuickGrid>
-</RoleGuard>
+<QuickGrid class="nc-grid" Items="CustomerList.AsQueryable()" Pagination="paginationState">
+    <TemplateColumn class="nc-narrow" Title="Id"
+                    SortBy="GridSort<Customer>.ByAscending(i => i.Id)">
+        <a href="customer/@context.Id">@context.Id</a>
+    </TemplateColumn>
+    <TemplateColumn Title="Full name" SortBy="GridSort<Customer>.ByAscending(i => i.FullName)">
+        @context.FullName
+    </TemplateColumn>
+    <Paginator State="paginationState" />
+</QuickGrid>
 
 @code {
     private PaginationState paginationState = new() { ItemsPerPage = 10 };

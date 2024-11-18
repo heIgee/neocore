@@ -2,10 +2,10 @@
 
 @inherits NeocoreComponent
 
-@inject SaleRepository SaleRepository
-@inject ItemRepository ItemRepository
-@inject CustomerRepository CustomerRepository
-@inject EmployeeRepository EmployeeRepository
+@inject ISaleRepository SaleRepository
+@inject IItemRepository ItemRepository
+@inject ICustomerRepository CustomerRepository
+@inject IEmployeeRepository EmployeeRepository
 @inject NavigationManager Nav
 
 <RoleGuard MinimumRole="UserRole.Editor">

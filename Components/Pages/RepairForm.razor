@@ -2,10 +2,10 @@
 
 @inherits NeocoreComponent
 
-@inject RepairRepository RepairRepository
-@inject ItemRepository ItemRepository
-@inject CustomerRepository CustomerRepository
-@inject EmployeeRepository EmployeeRepository
+@inject IRepairRepository RepairRepository
+@inject IItemRepository ItemRepository
+@inject ICustomerRepository CustomerRepository
+@inject IEmployeeRepository EmployeeRepository
 @inject NavigationManager Nav
 
 <RoleGuard MinimumRole="UserRole.Editor">
@@ -143,8 +143,6 @@
             {
                 RepairX = new() { Repair = new Repair() };
             }
-
-            Console.WriteLine(RepairX?.ToString());
 
             if (ItemList.Count <= 0)
                 ItemList = [.. await ItemRepository.FindAll()];

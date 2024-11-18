@@ -11,13 +11,10 @@ public class AuthService(IUserRepository userRepository, ILocalStorageService lo
     public async Task InitializeUser()
     {
         var userId = await localStorage.GetItemAsync<int?>("userId");
-        //Console.WriteLine(userId);
         if (userId.HasValue)
         {
             CurrentUser = await userRepository.FindById(userId.Value);
         }
-        //Console.WriteLine(CurrentUser);
-        //Console.WriteLine(((IAuthService)this).IsAuthenticated);
     }
 
     public async Task<bool> SignIn(string username, string password)
