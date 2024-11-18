@@ -37,6 +37,9 @@
             <label class="form-label" for="deliveryDate">Date:</label>
             <input class="form-control mb-2" type="date" id="deliveryDate" @bind-value="@DateBinder" />
 
+            <label class="form-label" for="total">Total:</label>
+            <input class="form-control mb-2" type="number" step="0.01" min="0" id="total" @bind-value="@SaleX.Sale.Total" />
+
             <FilterComponent
                 TEntity="Employee"
                 SelectedId="@(SaleX?.Employee is not null && SaleX.Employee.Id.HasValue ? SaleX.Employee.Id.Value : 0)"
